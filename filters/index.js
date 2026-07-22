@@ -8,6 +8,7 @@ export function filterTheme(status) {
 		'theme3': '#42ca4d',
 		'theme4': '#1ca5e9',
 		'theme5': '#ff448f',
+		'theme6': '#19bf9b',
 	}
 	return statusMap[status]
 }

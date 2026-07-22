@@ -127,4 +127,7 @@
 		background: #fff;
 		height: 100% !important;
 	}
+
+/* ui1.1 visual override */
+.page { background: #f7f8fa; }.page .left { background: #fff; }.page .left .item.on { color: #20bd9c; background: #f2fbf9; font-weight: 600; }.page .right { background: #f7f8fa; }.page .right .item { overflow: hidden; border-radius: 18rpx; background: #fff; }
 </style>

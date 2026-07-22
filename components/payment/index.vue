@@ -461,4 +461,8 @@
 		font-size: 0.3rpx;
 		color: #999;
 	}
+
+/* ui1.1 visual override */
+.payment-container { border-radius: 24rpx 24rpx 0 0; }
+.payment-container .pay-list { border-radius: 18rpx; background: #f7f8fa; }
 </style>

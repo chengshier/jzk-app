@@ -1,5 +1,5 @@
 <template>
-	<view :data-theme="theme">
+	<view :data-theme="theme" class="ui11-confirm-page">
 		<!-- #ifndef APP-PLUS-->
 		<view v-if="productType==='video'" class='cart_nav'>
 			<nav-bar :navTitle='navTitle' @getNavH='getNavH'></nav-bar>
@@ -14,7 +14,7 @@
 					<view class="item font_color" :class="shippingType == 1 ? 'on' : 'on2'" @tap="addressType(1)"
 						v-if='store_self_mention'></view>
 				</view>
-				<view class='address acea-row row-between-wrapper' @tap='onAddress' v-if='shippingType == 0'
+				<view class='address acea-row row-between-wrapper ui11-confirm-address' @tap='onAddress' v-if='shippingType == 0'
 					:style="store_self_mention ? '':'border-top-left-radius: 14rpx;border-top-right-radius: 14rpx;'">
 					<view class='addressCon' v-if="addressInfo.realName">
 						<view class='name'>{{addressInfo.realName}}
@@ -31,7 +31,7 @@
 					</view>
 					<view class='iconfont icon-jiantou'></view>
 				</view>
-				<view class='address acea-row row-between-wrapper' v-else @tap="showStoreList">
+				<view class='address acea-row row-between-wrapper ui11-confirm-address' v-else @tap="showStoreList">
 					<block v-if="storeList.length>0">
 						<view class='addressCon'>
 							<view class='name'>{{system_store.name}}
@@ -51,8 +51,8 @@
 				</view>
 			</view>
 			<view class="pad30">
-				<orderGoods :cartInfo="cartInfo" :orderProNum="orderProNum"></orderGoods>
-				<view class='wrapper borRadius14'>
+				<orderGoods class="ui11-confirm-goods" :cartInfo="cartInfo" :orderProNum="orderProNum"></orderGoods>
+				<view class='wrapper borRadius14 ui11-confirm-benefits'>
 					<view class='item acea-row row-between-wrapper' @tap='couponTap'
 						v-if="!orderInfoVo.bargainId && !orderInfoVo.combinationId && !orderInfoVo.seckillId && productType==='normal'">
 						<view>优惠券</view>
@@ -118,7 +118,14 @@
 						 :maxlength="150"	value="" name="mark" placeholder='请添加备注（150字以内）'></textarea>
 					</view>
 				</view>
-				<view class='moneyList borRadius14'>
+				<view class="ui11-confirm-payment">
+					<view class="ui11-confirm-payment__title"><text class="iconfont icon-zhifufangshi"></text>支付方式</view>
+					<view class="ui11-confirm-payment__item" v-for="(item,index) in cartArr" :key="item.value" v-if="item.payStatus===1" @tap="payItem(index)">
+						<view><text class="iconfont" :class="item.icon"></text><text>{{item.name}}</text></view>
+						<text class="iconfont" :class="active===index ? 'icon-xuanzhong' : 'icon-weixuanzhong'"></text>
+					</view>
+				</view>
+				<view class='moneyList borRadius14 ui11-confirm-summary'>
 					<view class='item acea-row row-between-wrapper'>
 						<view>商品总价：</view>
 						<view class='money'>￥{{orderInfoVo.proTotalFee || 0}}</view>
@@ -985,4 +992,26 @@
 		color: #fff !important;
 		margin-right: 0 !important;
 	}
+
+/* ui1.1 visual override */
+.order-submission { min-height: 100vh; padding-bottom: 140rpx; background: linear-gradient(180deg, #9ce0d5 0, #f7f8fa 300rpx); }
+.order-submission .allAddress, .order-submission .wrapper, .order-submission .orderGoods { margin: 20rpx 22rpx; border-radius: 22rpx; background: #fff; }
+.order-submission .pad30 { padding: 0; }
+.order-submission .wrapper { padding: 0 26rpx; }
+.order-submission .footer { border-top: 0; box-shadow: 0 -2rpx 18rpx rgba(33,45,44,.07); }
+.order-submission .footer .transparent { border-radius: 999rpx; }
+.ui11-confirm-page { background:#f6f7f8; min-height:100vh; }
+.ui11-confirm-page .allAddress { background:#4ecbb4; padding:110rpx 22rpx 0; }
+.ui11-confirm-page .ui11-confirm-address { width:auto; margin:0; padding:28rpx; border-radius:24rpx; max-height:none; background:#fff; }
+.ui11-confirm-page .ui11-confirm-goods,.ui11-confirm-page .ui11-confirm-benefits,.ui11-confirm-page .ui11-confirm-payment,.ui11-confirm-page .ui11-confirm-summary { margin:20rpx 22rpx 0; border-radius:24rpx; overflow:hidden; background:#fff; }
+.ui11-confirm-page .pad30 { padding:0; }.ui11-confirm-page .ui11-confirm-benefits .item { padding:28rpx; }
+.ui11-confirm-payment { padding:26rpx 30rpx; }.ui11-confirm-payment__title { color:#333; font-size:32rpx; font-weight:700; }.ui11-confirm-payment__title .iconfont { margin-right:14rpx; color:#27c6a5; }
+.ui11-confirm-payment__item { display:flex; align-items:center; justify-content:space-between; height:88rpx; font-size:29rpx; }.ui11-confirm-payment__item view { display:flex; align-items:center; }.ui11-confirm-payment__item view .iconfont { margin-right:20rpx; color:#29c8a6; font-size:42rpx; }.ui11-confirm-payment__item > .iconfont { color:#29c8a6; }
+.ui11-confirm-page .ui11-confirm-summary { padding:26rpx 30rpx; }.ui11-confirm-page .ui11-confirm-summary .item { padding:10rpx 0; }.ui11-confirm-page .footer { height:124rpx; padding:0 22rpx; box-shadow:0 -4rpx 20rpx rgba(26,52,46,.08); }.ui11-confirm-page .settlement { width:290rpx; border-radius:999rpx; background:#29c8a6; font-size:34rpx; text-align:center; }
+
+/* UI1.1 checkout reconstruction: existing address, order and payment data stay unchanged. */
+.ui11-confirm-page .order-submission{min-height:100vh;padding-bottom:156rpx;background:linear-gradient(180deg,#48cbb8 0,#9ce1d8 220rpx,#f6f7f8 450rpx)}.ui11-confirm-page .allAddress{margin:0;padding:112rpx 22rpx 0!important;background:transparent}.ui11-confirm-page .allAddress .nav,.ui11-confirm-page .allAddress .line{display:none}.ui11-confirm-page .ui11-confirm-address{min-height:162rpx;margin:0;padding:28rpx 30rpx;box-sizing:border-box;border-radius:22rpx!important;background:#fff;box-shadow:0 12rpx 30rpx rgba(26,95,84,.08)}.ui11-confirm-page .ui11-confirm-address .name{color:#34383b;font-size:35rpx;font-weight:700}.ui11-confirm-page .ui11-confirm-address .phone{margin-left:36rpx;font-size:30rpx;font-weight:500}.ui11-confirm-page .ui11-confirm-address .line2,.ui11-confirm-page .ui11-confirm-address .line1{margin-top:13rpx;color:#989fa2;font-size:26rpx;line-height:38rpx}.ui11-confirm-page .ui11-confirm-address .default{margin-right:12rpx;padding:3rpx 10rpx;border:1rpx solid #1dc19f;border-radius:8rpx;background:#f0faf7;color:#18b996;font-size:20rpx}
+.ui11-confirm-page .pad30{padding:0}.ui11-confirm-page .ui11-confirm-goods,.ui11-confirm-page .ui11-confirm-benefits,.ui11-confirm-page .ui11-confirm-payment,.ui11-confirm-page .ui11-confirm-summary{margin:20rpx 22rpx 0;overflow:hidden;border-radius:22rpx;background:#fff;box-shadow:0 8rpx 22rpx rgba(35,67,62,.035)}.ui11-confirm-page .ui11-confirm-goods{padding:4rpx 0}.ui11-confirm-page .ui11-confirm-benefits{padding:4rpx 28rpx}.ui11-confirm-page .ui11-confirm-benefits .item{min-height:86rpx;padding:0;border-bottom:1rpx solid #eef1f1;color:#34383b;font-size:29rpx}.ui11-confirm-page .ui11-confirm-benefits .item:last-child{border-bottom:0}.ui11-confirm-page .ui11-confirm-benefits .discount{color:#9da3a6;font-size:25rpx}
+.ui11-confirm-page .ui11-confirm-payment{padding:18rpx 28rpx}.ui11-confirm-page .ui11-confirm-payment__title{height:64rpx;line-height:64rpx;color:#34383b;font-size:32rpx;font-weight:700}.ui11-confirm-page .ui11-confirm-payment__title .iconfont{color:#28c6a5;font-size:36rpx}.ui11-confirm-page .ui11-confirm-payment__item{height:84rpx;border-top:1rpx solid #f0f2f1;color:#444;font-size:29rpx}.ui11-confirm-page .ui11-confirm-payment__item>.iconfont{font-size:36rpx}.ui11-confirm-page .ui11-confirm-summary{padding:16rpx 28rpx 24rpx}.ui11-confirm-page .ui11-confirm-summary .item{min-height:52rpx;padding:0;color:#a0a5a7;font-size:27rpx}.ui11-confirm-page .ui11-confirm-summary .money{color:#34383b}.ui11-confirm-page .ui11-confirm-summary .item:nth-child(2) .money{color:#ef4047}
+.ui11-confirm-page .order-submission .footer{height:128rpx;padding:0 22rpx;border:0;background:#fff;box-shadow:0 -4rpx 22rpx rgba(30,64,59,.10)}.ui11-confirm-page .order-submission .footer>view:first-child{color:#34383b;font-size:27rpx;font-weight:700}.ui11-confirm-page .order-submission .footer .price_color{color:#ef4047;font-size:43rpx}.ui11-confirm-page .order-submission .footer .settlement{width:292rpx;height:84rpx;border-radius:999rpx;background:#29c8a6;line-height:84rpx;font-size:36rpx;font-weight:700}
 </style>

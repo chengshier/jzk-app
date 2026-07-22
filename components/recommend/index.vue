@@ -178,4 +178,8 @@
 	.recommend .recommendList .item .money .num {
 		font-size: 28rpx;
 	}
+
+/* ui1.1 visual override */
+.recommend { padding: 0 22rpx; background: #f7f8fa; }
+.recommend .item { overflow: hidden; border-radius: 20rpx; background: #fff; }
 </style>

@@ -1,7 +1,7 @@
 <template>
-	<div class="login-wrapper" :data-theme="theme">
+	<div class="login-wrapper ui11-login-page" :data-theme="theme">
 		<div class="shading">
-			<image :src="mobileLoginLogo"/>
+			<image src="http://jzk.wit.cn/crmebimage/public/product/2026/07/13/login-hero-health-kit.png"/>
 		</div>
 		<div class="whiteBg" v-if="formItem === 1">
 			<div class="list" v-if="current !== 1">
@@ -657,4 +657,14 @@
 			}
 		}
 	}
+
+/* ui1.1 visual override */
+.login-wrapper { min-height: 100vh; padding: 0 70rpx; background: #fff; }
+.login-wrapper .shading { display: flex; height: 620rpx; align-items: flex-end; justify-content: center; background: transparent; }
+.login-wrapper .shading image { width: 460rpx; height: 460rpx; object-fit: contain; }
+.login-wrapper .whiteBg { padding: 0; background: transparent; }
+.login-wrapper .list .item { margin-bottom: 22rpx; padding: 0 26rpx; border-radius: 16rpx; background: #f6f7f8; }
+.login-wrapper .logon { height: 92rpx; margin-top: 38rpx; border-radius: 14rpx; line-height: 92rpx; background: #29c8a6 !important; font-size: 34rpx; }
+.login-wrapper .tips { color: #7b8190; }
 </style>
+

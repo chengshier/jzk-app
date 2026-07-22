@@ -26,5 +26,8 @@ export function setThemeColor(){
 		case 'theme5':
 			return '#FF448F';
 			break;
+		case 'theme6':
+			return '#19BF9B';
+			break;
 	}
 }

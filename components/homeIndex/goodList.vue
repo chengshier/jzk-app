@@ -1,6 +1,6 @@
 <template>
 	<!-- 商品列表 -->
-	<view>
+	<view :class="{ 'ui11-good-list': isUi11 }">
 		<view v-if="tempArr.length" :style="[boxStyle]">
 			<!-- 单列 -->
 			<block v-if="itemStyle == 0">
@@ -217,6 +217,9 @@
 			};
 		},
 		computed: {
+			isUi11() {
+				return this.dataConfig.ui11StyleConfig && this.dataConfig.ui11StyleConfig.tabVal === 1;
+			},
 			//商品名称颜色
 			titleColor() {
 				return {
@@ -527,6 +530,17 @@
 				font-size: 26rpx;
 				font-weight: normal;
 			}
+		}
+	}
+
+	.ui11-good-list {
+		.listB {
+			.item { background: #fff; border-radius: 14rpx; overflow: hidden; box-shadow: 0 4rpx 14rpx rgba(36, 74, 68, .05); }
+			.item .pictrue { height: 190rpx; }
+			.item .text-info { padding: 10rpx 10rpx 12rpx; }
+			.item .title { height: 68rpx; line-height: 34rpx; font-size: 24rpx; }
+			.item .price { color: #f04444; font-size: 26rpx; }
+			.item .price .num { font-size: 34rpx; }
 		}
 	}
 

@@ -9,8 +9,8 @@
 // +----------------------------------------------------------------------
 //移动端商城API
 // let domain = 'http://localhost:8169'
-// let domain = 'http://localhost:8198'
-let domain = 'https://jzkapp.wit.cn'
+let domain = 'http://localhost:8198'
+// let domain = 'https://jzkapp.wit.cn'
 
 module.exports = {
 	// 请求域名 格式： https://您的域名

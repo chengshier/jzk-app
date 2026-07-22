@@ -23,3 +23,4 @@ build.sh
 .idea
 unpackage
 .worktrees/
+.png

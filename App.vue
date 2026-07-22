@@ -264,6 +264,7 @@
 	@import 'static/css/guildford.css';
 	@import 'static/css/style.scss';
 	@import 'static/css/unocss.css';
+    @import 'static/css/ui11.scss';
 	@import 'static/fonts/font.css';
 
 	/* 条件编译，仅在H5平台生效 */

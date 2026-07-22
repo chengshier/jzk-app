@@ -111,9 +111,9 @@
 			}
 		},
 		onLoad(options) {
-			if (this.$Cache.getItem('cityList')) {
+			if (this.$Cache.getItem('cityListV2')) {
 				//检测城市数据缓存是否过期，有的话从缓存取，没有的话请求接口
-				this.district = this.$Cache.getItem('cityList');
+				this.district = this.$Cache.getItem('cityListV2');
 				this.initialize();
 			} else {
 				this.showLoading = true;
@@ -612,4 +612,7 @@
 		color: #fff !important;
 		margin-right: 0 !important;
 	}
+
+/* ui1.1 visual override */
+.addAddress { min-height:100vh; background:#f7f8fa; }.addAddress .list { margin:22rpx; padding: 0 24rpx; border-radius:22rpx; background:#fff; }.addAddress .list .item { min-height:96rpx; border-bottom:1rpx solid #edf0f0; }.addAddress .default { color:#20bd9c; }
 </style>

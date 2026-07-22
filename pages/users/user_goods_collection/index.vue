@@ -425,4 +425,7 @@
 		color: #fff!important;
 		margin-right: 0 !important;
 	}
+
+/* ui1.1 visual override */
+.collectionGoods { min-height:100vh; background:#f7f8fa; }.collectionGoods .nav { padding:22rpx; background:#fff; }.collectionGoods .item { margin: 20rpx 22rpx; border-radius:22rpx; background:#fff; overflow:hidden; }
 </style>

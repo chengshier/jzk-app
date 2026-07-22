@@ -17,21 +17,39 @@
 				<image :src="mobileLoginLogo" mode="widthFix" class="image"></image>
 			</view>
 			<view class="company">{{companyName}}</view>
+			<!-- #ifdef MP -->
+			<view class="login-switch">
+				<view class="login-switch__item" :class="{ 'is-active': loginMode === 'wechat' }" @click="switchLoginMode('wechat')">微信登录</view>
+				<view class="login-switch__item" :class="{ 'is-active': loginMode === 'account' }" @click="switchLoginMode('account')">账号登录</view>
+			</view>
+			<!-- #endif -->
 			<view class="btn-wrapper">
 				<!-- #ifdef H5 -->
 				<button hover-class="none" @click="wechatLogin" class="btn1 bg-color"><text
 						class='iconfont icon-weixin2'></text>立即登录</button>
 				<!-- #endif -->
 				<!-- #ifdef MP -->
-				<button v-if="wxLogin" hover-class="none"
-					@click="getUserProfile" class="btn1 bg-color">立即登录</button>
-				<view v-else>
-					<button v-if="routinePhoneVerification == 1 || routinePhoneVerification.length===3" hover-class="none"
-						@click="onUserPhone" class="btn1 bg-color"><text
-							class='iconfont'></text>一键绑定手机号</button>
-					<button v-if="routinePhoneVerification == 2 || routinePhoneVerification.length===3" hover-class="none"
-						@click="onUserPhone('isPhone')" class="btn2">手动绑定手机号</button>
-				</view>		
+				<view v-if="loginMode === 'wechat'">
+					<button v-if="wxLogin" hover-class="none"
+						@click="getUserProfile" class="btn1 bg-color">立即登录</button>
+					<view v-else>
+						<button v-if="routinePhoneVerification == 1 || routinePhoneVerification.length===3" hover-class="none"
+							@click="onUserPhone" class="btn1 bg-color"><text
+								class='iconfont'></text>一键绑定手机号</button>
+						<button v-if="routinePhoneVerification == 2 || routinePhoneVerification.length===3" hover-class="none"
+							@click="onUserPhone('isPhone')" class="btn2">手动绑定手机号</button>
+					</view>
+				</view>
+				<view v-else class="wechat-login__account-form">
+					<view class="wechat-login__field">
+						<input v-model.trim="account" class="wechat-login__input" type="text" placeholder="请输入账号" maxlength="16" />
+					</view>
+					<view class="wechat-login__field">
+						<input v-model="password" class="wechat-login__input" type="text" password placeholder="请输入密码" maxlength="18" />
+					</view>
+					<button hover-class="none" @click="submitAccountLogin" class="btn1 bg-color">账号密码登录</button>
+					<button hover-class="none" @click="switchLoginMode('wechat')" class="btn2">返回微信登录</button>
+				</view>
 				<!-- #endif -->
 			</view>
 		</view>
@@ -55,6 +73,7 @@
 		getUserPhone
 	} from '@/api/public';
 	import {
+		BACK_URL,
 		LOGO_URL,
 		EXPIRES_TIME,
 		USER_INFO,
@@ -65,10 +84,12 @@
 	} from '@/config/app';
 	import {
 		getUserInfo,
+		loginH5,
 		spread
 	} from '@/api/user.js'
 	import Routine from '@/libs/routine';
 	import wechat from "@/libs/wechat";
+	import { Debounce } from '@/utils/validate.js'
 	export default {
 		data() {
 			return {
@@ -93,6 +114,9 @@
 				routinePhoneVerification: app.globalData.routinePhoneVerification, //小程序手机号校验类型（多选）1微信小程序验证 2短信验证
 				loginConfig: '' ,//小程序绑定手机号，isPhone其他手机号绑定
 				wxLogin: true ,//登录显示
+				loginMode: 'wechat',
+				account: '',
+				password: '',
 				mobileLoginLogo: app.globalData.mobileLoginLogo // 登录页logo
 			}
 		},
@@ -117,6 +141,9 @@
 					break;
 				case 'theme5':
 					this.backBg = `${this.urlDomain}crmebimage/perset/usersImg/wxbj5.png`;
+					break;
+				case 'theme6':
+					this.backBg = `${this.urlDomain}crmebimage/perset/usersImg/wxbj3.png`;
 					break;
 			}
 
@@ -169,6 +196,39 @@
 		},
 		methods: {
 
+			switchLoginMode(mode) {
+				this.loginMode = mode;
+			},
+			submitAccountLogin: Debounce(function() {
+				if (!this.account) return this.$util.Tips({
+					title: '请填写账号'
+				});
+				if (!/^[\w\d]{5,16}$/i.test(this.account)) return this.$util.Tips({
+					title: '请输入正确的账号'
+				});
+				if (!this.password) return this.$util.Tips({
+					title: '请填写密码'
+				});
+				uni.showLoading({
+					title: '登录中'
+				});
+				loginH5({
+					account: this.account,
+					password: this.password,
+					spread_spid: this.$Cache.get('spread')
+				}).then(({ data }) => {
+					this.$store.commit('LOGIN', {
+						token: data.token
+					});
+					this.getUserInfo(data);
+				}).catch(err => {
+					uni.hideLoading();
+					this.$util.Tips({
+						title: err
+					});
+				});
+			}),
+
 			//绑定手机号弹窗回调
 			confirmModel() {
 				this.isPhoneBox = false;
@@ -207,18 +267,22 @@
 			/**
 			 * 获取个人用户信息
 			 */
-			getUserInfo: function() {
+			getUserInfo: function(loginData) {
 				let that = this;
+				if (loginData && loginData.uid) {
+					that.$store.commit('SETUID', loginData.uid);
+				}
 				getUserInfo().then(res => {
 					uni.hideLoading();
 					that.userInfo = res.data
 					that.$store.commit("UPDATE_USERINFO", res.data);
-					that.$util.Tips({
-						title: '登录成功',
-						icon: 'success'
-					}, {
-						tab: 3
-					})
+					let backUrl = that.$Cache.get(BACK_URL) || '/pages/index/index';
+					if (backUrl.indexOf('/pages/users/login/index') !== -1 || backUrl.indexOf('/pages/users/wechat_login/index') !== -1) {
+						backUrl = '/pages/index/index';
+					}
+					uni.reLaunch({
+						url: backUrl
+					});
 				});
 			},
 			//绑定手机号
@@ -387,7 +451,33 @@
 		color: #333;
 		text-align: center;
 		font-weight: 500;
-		margin: 32rpx 0 96rpx 0;
+		margin: 32rpx 0 48rpx 0;
+	}
+
+	.login-switch {
+		display: flex;
+		margin: 0 66rpx 32rpx;
+		padding: 8rpx;
+		border-radius: 999rpx;
+		background: #f3f6f8;
+		gap: 8rpx;
+	}
+
+	.login-switch__item {
+		flex: 1;
+		height: 68rpx;
+		line-height: 68rpx;
+		border-radius: 999rpx;
+		text-align: center;
+		font-size: 28rpx;
+		color: #7b8794;
+	}
+
+	.login-switch__item.is-active {
+		background: #fff;
+		color: #333;
+		font-weight: 600;
+		box-shadow: 0 8rpx 20rpx rgba(31, 39, 61, 0.08);
 	}
 
 	.page {
@@ -406,7 +496,7 @@
 		}
 
 		.btn-wrapper {
-			margin-top: 86rpx;
+			margin-top: 32rpx;
 			padding: 0 66rpx;
 
 			button {
@@ -426,6 +516,27 @@
 					border: 2px solid #E4E4E4;
 				}
 			}
+		}
+
+		.wechat-login__account-form {
+			padding-top: 8rpx;
+		}
+
+		.wechat-login__field {
+			display: flex;
+			align-items: center;
+			height: 96rpx;
+			padding: 0 28rpx;
+			margin-bottom: 24rpx;
+			border-radius: 24rpx;
+			background: #fff;
+			box-shadow: 0 12rpx 32rpx rgba(31, 39, 61, 0.08);
+		}
+
+		.wechat-login__input {
+			width: 100%;
+			font-size: 30rpx;
+			color: #333;
 		}
 	}
 

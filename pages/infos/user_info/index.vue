@@ -464,4 +464,7 @@
 		border-radius: 45rpx;
 		margin: 30rpx auto 0 auto;
 	}
+
+/* ui1.1 visual override */
+.personal-data { min-height:100vh; background:#f7f8fa; }.personal-data .list { border-radius:22rpx; background:#fff; box-shadow:0 8rpx 20rpx rgba(33,45,44,.025); }.personal-data .list .item { min-height:100rpx; border-bottom-color:#edf0f0; }
 </style>

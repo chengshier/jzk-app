@@ -16,10 +16,10 @@
 									<view class="name" v-if="userInfo && uid">
 										{{userInfo && userInfo.nickname && uid ? userInfo.nickname : ''}}
 										<view class="vip" v-if="userInfo.vip">
-											<image :src="userInfo.vipIcon" alt="">
-												<view style="margin-left: 10rpx;" class="vip-txt">{{userInfo.vipName|| ''}}
-												</view>
+											<image :src="userInfo.vipIcon" alt=""></image>
+										<view style="margin-left: 10rpx;" class="vip-txt">{{userInfo.vipName|| ''}}
 										</view>
+									</view>
 									</view>
 									<view class="num" v-if="userInfo && userInfo.phone && uid">
 										<view class="num-txt">{{userInfo.phone}}</view>
@@ -120,7 +120,26 @@
 								<!-- #endif -->
 							</view>
 						</view>
-						<image :src="copyImage" alt="" class='support'>
+						<view class="jk-identity-card" v-if="isLogin">
+							<view class="identity-head">
+								<view class="identity-title">九州康身份中心</view>
+								<view class="identity-status">{{ jkIdentityStatusText }}</view>
+							</view>
+							<view class="identity-role">当前主身份：{{ jkPrimaryRoleName }}</view>
+							<view class="identity-reason" v-if="jkDisableReason">原因：{{ jkDisableReason }}</view>
+							<view class="identity-tag-list" v-if="jkRoles.length">
+								<text class="identity-tag" v-for="item in jkRoles" :key="item">{{ getJkRoleName(item) }}</text>
+							</view>
+							<view class="identity-action-row">
+								<view class="identity-btn primary" @click="goJkStatus">查看状态</view>
+								<view class="identity-btn" @click="goJkApplyList">申请记录</view>
+								<view class="identity-btn disabled" v-if="jkEntryDisabled">入口已停用</view>
+								<view class="identity-btn primary" v-else @click="goJkApply">{{ jkCanApplyRoles.length ? '申请新身份' : '身份入口' }}</view>
+							</view>
+							<view class="jk-business-links" v-if="jkBusinessLinks.length"><view v-for="item in jkBusinessLinks" :key="item.url" :class="['identity-btn', item.disabled ? 'disabled' : '']" @click="goJkBusiness(item)">{{ item.name }}</view></view>
+<view class="identity-tip">业务入口按当前身份和权限展示。</view>
+						</view>
+						<image :src="copyImage" alt="" class='support'></image>
 					</view>
 				</scroll-view>
 			</view>
@@ -135,6 +154,7 @@
 	import {goPage} from '@/libs/iframe.js'
 	import {BACK_URL} from '@/config/cache';
 	import {getMenuList, copyrightApi} from '@/api/user.js';
+	import { getJkPermissionContext } from '@/api/jk.js';
 	import {orderData} from '@/api/order.js';
 	import {getCity, tokenIsExistApi} from '@/api/api.js';
 	import {toLogin} from '@/libs/login.js';
@@ -153,7 +173,49 @@
 		components:{
 					pageFooter
 		},
-		computed: mapGetters(['isLogin', 'chatUrl', 'uid','bottomNavigationIsCustom']),
+		computed: {
+			...mapGetters(['isLogin', 'chatUrl', 'uid', 'bottomNavigationIsCustom']),
+			jkRoles() {
+				return (this.jkContext && this.jkContext.roles) || [];
+			},
+			jkCanApplyRoles() {
+				return (this.jkContext && this.jkContext.canApplyRoles) || [];
+			},
+			jkPrimaryRoleName() {
+				return (this.jkContext && this.jkContext.primaryRoleName) || '普通用户';
+			},
+			jkIdentityStatusText() {
+				return (this.jkContext && (this.jkContext.identityStatusText || this.jkContext.auditStatusText)) || '未开通业务身份';
+			},
+			jkDisableReason() {
+				return (this.jkContext && (this.jkContext.disabledReasonText || this.jkContext.disableReason)) || '';
+			},
+			jkEntryDisabled() { return !!(this.jkContext && this.jkContext.freezeStatus); },
+			jkBusinessLinks() {
+				const context = this.jkContext || {};
+				const permissions = context.permissions || [];
+				const role = context.primaryRoleCode;
+				const disabled = !!context.freezeStatus;
+				const links = [];
+				const addLink = (name, url, permission, roles) => {
+					if (permission && permissions.indexOf(permission) === -1) return;
+					if (roles && roles.length && roles.indexOf(role) === -1) return;
+					if (!links.find(item => item.url === url)) {
+						links.push({ name, url, disabled });
+					}
+				};
+				addLink('向平台订货记录', '/pages/jk/trade/list?mode=order', 'stock.platform.order', ['county_agent']);
+				addLink('下级调拨处理', '/pages/jk/trade/list?mode=handleTransfer', 'stock.transfer.audit', ['county_agent']);
+				addLink('我的调拨', '/pages/jk/trade/list?mode=transfer', 'stock.apply', ['maker', 'partner']);
+				addLink('我的库存', '/pages/jk/stock/index', 'stock.view.self', ['maker', 'partner', 'county_agent']);
+				addLink('库存流水', '/pages/jk/stock/flow', 'stock.flow.view', ['maker', 'partner', 'county_agent']);
+				addLink('收益中心', '/pages/jk/commission/index', 'commission.view.self', ['maker', 'partner', 'county_agent']);
+				addLink('资金账户', '/pages/jk/fund/account', 'fund.account.view', ['maker', 'partner', 'county_agent']);
+				addLink('提现申请', '/pages/jk/withdraw/apply', 'withdraw.apply', ['maker', 'partner', 'county_agent']);
+				addLink('提现记录', '/pages/jk/withdraw/list', 'withdraw.view.self', ['maker', 'partner', 'county_agent']);
+				return links;
+			}
+		},
 		data() {
 			return {
 				urlDomain: this.$Cache.get("imgHost"),
@@ -196,6 +258,7 @@
 				} ,//客服配置
 				userInfo: {},
 				copyImage: '',//版权图片
+				jkContext: null
 			}
 		},
 		onLoad() {
@@ -244,6 +307,7 @@
 			this.getMyMenus();
 			this.getTokenIsExist();
 			this.copyrightImage();
+			this.loadJkPermissionContext();
 			this.theme = this.$Cache.get('theme')
 			app.globalData.theme = this.$Cache.get('theme')
 			if (!this.$Cache.getItem('cityList')) getCityList();
@@ -262,6 +326,55 @@
 			// #endif
 		},
 		methods: {
+			loadJkPermissionContext() {
+				if (!this.isLogin) {
+					this.jkContext = null;
+					return;
+				}
+				getJkPermissionContext().then(res => {
+					this.jkContext = res.data || null;
+				}).catch(() => {
+					this.jkContext = null;
+				});
+			},
+			getJkRoleName(code) {
+				const roleNameMap = (this.jkContext && this.jkContext.roleNameMap) || {};
+				const roleMap = {
+					normal_user: '普通用户',
+					maker: '创客',
+					partner: '合伙人',
+					county_agent: '区县代',
+					health_advisor: '健康顾问',
+					city_agent: '市代',
+					province_agent: '省代'
+				};
+				return roleNameMap[code] || roleMap[code] || code;
+			},
+			goJkBusiness(item) { if (item.disabled) return this.$util.Tips({ title: this.jkDisableReason || '当前身份不可使用' }); uni.navigateTo({url:item.url}); },
+			goJkStatus() {
+				uni.navigateTo({
+					url: '/pages/jk/identity/status'
+				});
+			},
+			goJkApply() {
+				if (this.jkEntryDisabled) {
+					return;
+				}
+				if (this.jkCanApplyRoles.length) {
+					uni.navigateTo({
+						url: '/pages/jk/identity/apply'
+					});
+					return;
+				}
+				uni.navigateTo({
+					url: '/pages/jk/identity/status'
+				});
+			},
+			goJkApplyList() {
+				uni.navigateTo({
+					url: '/pages/jk/identity/applyList'
+				});
+			},
 			//校验token是否有效,true为有效，false为无效
 			getTokenIsExist() {
 				tokenIsExistApi().then(res => {
@@ -771,6 +884,80 @@
 			}
 		}
 
+		.jk-identity-card {
+			margin: 20rpx 0;
+			padding: 28rpx;
+			border-radius: 14rpx;
+			background: linear-gradient(135deg, #f7fbf9, #edf7f2);
+			.identity-head {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 16rpx;
+			}
+			.identity-title {
+				font-size: 30rpx;
+				font-weight: 600;
+				color: #1f2937;
+			}
+			.identity-status {
+				font-size: 22rpx;
+				color: #1f7a5b;
+				background: rgba(31, 122, 91, 0.08);
+				padding: 8rpx 16rpx;
+				border-radius: 999rpx;
+			}
+			.identity-role,
+			.identity-reason,
+			.identity-tip {
+				font-size: 24rpx;
+				line-height: 1.7;
+				color: #4b5563;
+			}
+			.identity-reason {
+				margin-top: 8rpx;
+				color: #b45309;
+			}
+			.identity-tag-list {
+				display: flex;
+				flex-wrap: wrap;
+				margin-top: 16rpx;
+			}
+			.identity-tag {
+				margin-right: 12rpx;
+				margin-bottom: 12rpx;
+				padding: 8rpx 16rpx;
+				border-radius: 999rpx;
+				font-size: 22rpx;
+				background: #ffffff;
+				color: #1f2937;
+			}
+			.identity-action-row {
+				display: flex;
+				flex-wrap: wrap;
+				margin-top: 20rpx;
+			}
+			.identity-btn {
+				margin-right: 16rpx;
+				margin-bottom: 16rpx;
+				padding: 14rpx 24rpx;
+				border-radius: 999rpx;
+				background: #ffffff;
+				font-size: 24rpx;
+				color: #1f7a5b;
+			}
+			.identity-btn.primary {
+				background: #1f7a5b;
+				color: #ffffff;
+			}
+			.identity-btn.disabled {
+				background: #e5e7eb;
+				color: #6b7280;
+			}
+			.identity-tip {
+				margin-top: 6rpx;
+			}
+		}
 		.phone {
 			color: #fff;
 		}
@@ -803,4 +990,16 @@
 		font-size: 28rpx;
 		text-align: center;
 	}
+
+/* ui1.1 visual override */
+.user { min-height: 100vh; background: #f7f8fa; }
+.user .header { border-radius: 0 0 34rpx 34rpx; background: linear-gradient(180deg, #2fc7ad, #9fe0d6); }
+.user .wrapper, .user .user-menus, .user .order-status { margin-right: 22rpx; margin-left: 22rpx; border-radius: 22rpx; background: #fff; box-shadow: 0 8rpx 20rpx rgba(33,45,44,.025); }
+.user .user-menus .item { min-height: 100rpx; }
+
+/* UI1.1 identity entry card in the profile page */
+.jk-identity-card{margin:22rpx 0!important;padding:28rpx!important;border-radius:24rpx!important;background:linear-gradient(135deg,#e7faf5,#fafffd)!important;box-shadow:0 10rpx 26rpx rgba(28,127,106,.08)}.jk-identity-card .identity-title{color:#303638!important;font-size:32rpx!important;font-weight:700!important}.jk-identity-card .identity-status{background:#d9f5ed!important;color:#119878!important;font-weight:600}.jk-identity-card .identity-role,.jk-identity-card .identity-tip{color:#71817e!important}.jk-identity-card .identity-tag{border:1rpx solid #a5e3d5;background:#fff!important;color:#159e80!important}.jk-identity-card .identity-action-row{gap:14rpx}.jk-identity-card .identity-btn{margin:0!important;padding:14rpx 22rpx!important;border:1rpx solid #a5e3d5;background:#fff!important;color:#159e80!important;font-weight:600}.jk-identity-card .identity-btn.primary{border-color:#28c6a5!important;background:#28c6a5!important;color:#fff!important}.jk-identity-card .jk-business-links{display:flex;flex-wrap:wrap;gap:14rpx;margin-top:2rpx}.jk-identity-card .jk-business-links .identity-btn{flex:0 0 auto}.jk-identity-card .identity-btn.disabled{border-color:#e5e8e7!important;background:#eef1f0!important;color:#9ba4a2!important}
+
+/* Profile identity entry aligned with identity design system. */
+.jk-identity-card{margin:24rpx 0!important;padding:32rpx!important;border:0!important;border-radius:20rpx!important;background:#FFF!important;box-shadow:0 4rpx 16rpx rgba(0,0,0,.04)!important}.jk-identity-card .identity-head{margin-bottom:20rpx}.jk-identity-card .identity-title{color:#333!important;font-size:32rpx!important;font-weight:600!important}.jk-identity-card .identity-status{display:flex;align-items:center;height:48rpx;padding:0 18rpx;border-radius:24rpx;background:rgba(40,198,165,.10)!important;color:#159E80!important;font-size:24rpx!important;font-weight:600}.jk-identity-card .identity-role,.jk-identity-card .identity-tip{color:#999!important;font-size:25rpx!important}.jk-identity-card .identity-tag-list,.jk-identity-card .identity-action-row,.jk-identity-card .jk-business-links{display:flex;flex-wrap:wrap;gap:16rpx}.jk-identity-card .identity-tag{display:flex;align-items:center;height:48rpx;margin:0!important;padding:0 20rpx;border:0!important;border-radius:24rpx;background:rgba(40,198,165,.10)!important;color:#159E80!important;font-size:24rpx!important}.jk-identity-card .identity-action-row{margin-top:24rpx!important}.jk-identity-card .identity-btn{display:flex;align-items:center;justify-content:center;min-height:48rpx;margin:0!important;padding:0 22rpx!important;border:0!important;border-radius:24rpx!important;background:#F1F4F3!important;color:#687572!important;font-size:24rpx!important;font-weight:600}.jk-identity-card .identity-btn.primary{background:#28C6A5!important;color:#FFF!important}.jk-identity-card .identity-btn.disabled{background:#EEF1F3!important;color:#9AA3A8!important}
 </style>

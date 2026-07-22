@@ -15,8 +15,7 @@
 					// #endif
 				}
 			}
-		},
-		{
+		},		{
 			"path": "pages/order_addcart/order_addcart",
 			"style": {
 				"navigationBarTitleText": "购物车",
@@ -33,7 +32,7 @@
 		{
 			"path": "pages/user/index",
 			"style": {
-				"navigationBarTitleText": "个人中心",
+				"navigationBarTitleText": "个人中心", "navigationStyle": "custom",
 				// #ifdef MP || APP-PLUS
 				"navigationBarTextStyle": "black",
 				"navigationBarBackgroundColor": "#fff",
@@ -59,9 +58,45 @@
 					// #endif
 				}
 			}
+		},
+		{
+			"path": "pages/health/index",
+			"style": {
+				"navigationBarTitleText": "健康",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mall/index",
+			"style": {
+				"navigationBarTitleText": "商城",
+				"navigationStyle": "custom"
+			}
 		}
     ],
 	"subPackages": [{
+			"root": "pages/jk",
+			"name": "jk",
+			"pages": [
+				{
+					"path": "identity/status",
+					"style": {
+						"navigationBarTitleText": "身份状态", "navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "identity/apply",
+					"style": {
+						"navigationBarTitleText": "身份申请", "navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "identity/applyList",
+					"style": {
+						"navigationBarTitleText": "申请记录", "navigationStyle": "custom"
+					}
+				},{"path":"trade/create","style":{"navigationBarTitleText":"业务下单"}},{"path":"trade/list","style":{"navigationBarTitleText":"业务单列表"}},{"path":"trade/detail","style":{"navigationBarTitleText":"业务单详情"}},{"path":"stock/index","style":{"navigationBarTitleText":"我的库存","navigationStyle":"custom"}},{"path":"stock/flow","style":{"navigationBarTitleText":"库存流水","navigationStyle":"custom"}},{"path":"commission/index","style":{"navigationBarTitleText":"收益中心","navigationStyle":"custom"}},{"path":"commission/list","style":{"navigationBarTitleText":"佣金明细","navigationStyle":"custom"}},{"path":"commission/detail","style":{"navigationBarTitleText":"佣金详情","navigationStyle":"custom"}},{"path":"fund/account","style":{"navigationBarTitleText":"资金账户","navigationStyle":"custom"}},{"path":"fund/flow","style":{"navigationBarTitleText":"资金流水","navigationStyle":"custom"}},{"path":"withdraw/apply","style":{"navigationBarTitleText":"申请提现","navigationStyle":"custom"}},{"path":"withdraw/list","style":{"navigationBarTitleText":"提现记录","navigationStyle":"custom"}},{"path":"withdraw/detail","style":{"navigationBarTitleText":"提现详情","navigationStyle":"custom"}},{"path": "health/glucose","style":{"navigationBarTitleText": "血糖记录"}},{"path": "health/diet","style":{"navigationBarTitleText": "记录饮食"}},{"path": "health/exercise","style":{"navigationBarTitleText": "记录运动"}},{"path": "health/medicine","style":{"navigationBarTitleText": "选择药品"}}]
+		}, {
 			"root": "pages/users",
 			"name": "users",
 			"pages": [
@@ -906,12 +941,17 @@
 				"iconPath": "static/tabBar/indexwei.png",
 				"selectedIconPath": "static/tabBar/indexxuan.png",
 				"text": "首页"
-			},
-			{
-				"pagePath": "pages/goods_cate/goods_cate",
+			},			{
+				"pagePath": "pages/health/index",
 				"iconPath": "static/tabBar/catewei.png",
 				"selectedIconPath": "static/tabBar/catexuan.png",
-				"text": "分类"
+				"text": "健康"
+			},
+			{
+				"pagePath": "pages/mall/index",
+				"iconPath": "static/tabBar/catewei.png",
+				"selectedIconPath": "static/tabBar/catexuan.png",
+				"text": "商城"
 			},
 			{
 				"pagePath": "pages/order_addcart/order_addcart",
@@ -936,3 +976,7 @@
 		}]
 	}
 }
+
+
+
+

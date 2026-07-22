@@ -192,4 +192,7 @@
 	.main_bg{
 		@include main_bg_color(theme);
 	}
+
+/* ui1.1 visual override */
+.navbar { height: 96rpx; background: #fff; }.navbar .item { position: relative; color: #8e9297; }.navbar .item.on { color: #20bd9c; font-weight: 600; }.navbar .item.on::after { position:absolute; bottom:0; width:42rpx; height:6rpx; border-radius:999rpx; background:#29c8a6; content:''; }.coupon-list { padding: 22rpx; background:#f7f8fa; }.coupon-list .item { border-radius: 22rpx; overflow: hidden; }
 </style>

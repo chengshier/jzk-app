@@ -116,4 +116,8 @@
 	.pictrue image {
 		background: #f4f4f4;
 	}
+
+/* ui1.1 visual override */
+.orderGoods { border-radius: 22rpx; background: #fff; }
+.orderGoods .pictrue { overflow: hidden; border-radius: 16rpx; }
 </style>

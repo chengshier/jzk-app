@@ -10,7 +10,7 @@
 							<view class="menu acea-row" :id="'nav' + indexw" :style="[gridColumns]">
 								<view :style="[titleColor]" class="item" :class="number===1?'four':number===2?'five':''"
 									v-for="(itemn,indexn) in item.list" :key="indexn"
-									@click="menusTap(itemn.info[1].value)">
+									@click="menusTap(itemn)">
 									<view class="pictrue skeleton-radius">
 										<easy-loadimage :image-src="itemn.img" :radius="dataConfig.contentStyle.val">
 										</easy-loadimage>
@@ -30,7 +30,7 @@
 		<view class="nav oneNav" v-else>
 			<scroll-view scroll-x="true" style="white-space: nowrap; display: flex" show-scrollbar="false">
 				<block v-for="(item, index) in menus" :key="index">
-					<view class="item" v-show="item.status" :style="[titleColor]" @click="menusTap(item.info[1].value)">
+					<view class="item" v-show="item.status" :style="[titleColor]" @click="menusTap(item)">
 						<view class="pictrue skeleton-radius">
 							<easy-loadimage :image-src="item.img" :radius="dataConfig.contentStyle.val">
 							</easy-loadimage>
@@ -186,8 +186,12 @@
 				}
 				this.$set(this, 'menuList', goodArray);
 			},
-			menusTap(url) {
-				this.$util.navigateTo(url);
+menusTap(item) {
+				const info = item && item.info ? item.info : [];
+				const title = info[0] && info[0].value ? info[0].value : '';
+				const configuredUrl = info[1] && info[1].value ? info[1].value : '';
+				const url = configuredUrl || (title === '健康档案' ? '/pages/health/index' : '');
+				if (url) this.$util.navigateTo(url);
 			}
 		}
 	};
@@ -300,3 +304,4 @@
 		}
 	}
 </style>
+

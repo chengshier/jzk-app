@@ -3,7 +3,7 @@
 	<view :data-theme="theme">
 		<view v-if="obj.isCustom==1">
 			<view class="page-footer" id="target">
-				<view class="foot-item" v-for="(item,index) in obj.bottomNavigationList" :key="index"
+<view class="foot-item" v-for="(item,index) in obj.bottomNavigationList" :key="index"
 					@click="goRouter(item)">
 					<block v-if="item.link.split('?')[0] == activeRouter">
 						<image :src="item.checked"></image>
@@ -62,7 +62,7 @@
 				var pages = getCurrentPages();
 				var page = (pages[pages.length - 1]).$page.fullPath;
 				if (item.link == page) return
-				if (['/pages/index/index', '/pages/goods_cate/goods_cate',
+				if (['/pages/index/index', '/pages/health/index', '/pages/mall/index',
 						'/pages/order_addcart/order_addcart', '/pages/user/index'
 					].indexOf(item.link) > -1) {
 					uni.switchTab({
@@ -147,4 +147,10 @@
 			@include main-color(theme);
 		}
 	}
+
+/* ui1.1 visual override */
+.page-footer { height: calc(112rpx + env(safe-area-inset-bottom)); border: 0; box-shadow: 0 -2rpx 18rpx rgba(33, 45, 44, .05); }
+.page-footer .foot-item { min-width: 106rpx; }
+.page-footer .foot-item image { width: 48rpx; height: 48rpx; }
+.page-footer .foot-item .txt, .page-footer .unchecked { margin-top: 4rpx; font-size: 25rpx; font-weight: 500; }
 </style>

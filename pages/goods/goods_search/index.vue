@@ -251,4 +251,7 @@
 	.searchBox{
 		width: 100%;
 	}
+
+/* ui1.1 visual override */
+.searchGood { min-height: 100vh; background: #f7f8fa; }.searchGood .search { padding: 22rpx; background: linear-gradient(180deg,#2fc7ad,#8ddfd2); }.searchGood .search .input { border-radius: 999rpx; background:#fff; }.searchGood .hot-search, .searchGood .history { margin: 22rpx; padding: 28rpx; border-radius: 22rpx; background:#fff; }
 </style>

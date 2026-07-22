@@ -1107,4 +1107,8 @@
 			padding: 30rpx 24rpx;
 		}
 	}
+
+/* ui1.1 visual override */
+.order-details { min-height: 100vh; background: #f7f8fa; }
+.order-details .wrapper, .order-details .address, .order-details .order-info { margin: 20rpx 22rpx; border-radius: 22rpx; background: #fff; }
 </style>

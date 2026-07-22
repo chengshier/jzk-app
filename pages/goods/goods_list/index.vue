@@ -1,6 +1,6 @@
 <template>
-	<view :data-theme="theme">
-		<view class='productList'>
+	<view :data-theme="theme" class="ui11-mall-page">
+		<view class='productList'><image class='ui11-mall-hero' src='http://jzk.wit.cn/crmebimage/public/product/2026/07/13/mall-banner-glucose-management.png' mode='widthFix'></image>
 			<view class='search bg_color acea-row row-between-wrapper'>
 				<!-- #ifdef H5 -->
 				<view class="iconfont icon-xiangzuo" @click="goback()"></view>
@@ -416,4 +416,20 @@
 		padding-bottom: 30rpx;
 		margin-top: 172rpx;
 	}
+
+/* ui1.1 visual override */
+.productList { min-height: 100vh; padding-bottom: 28rpx; background: #f7f8fa; }
+.productList .search { height: 168rpx; padding: 56rpx 22rpx 18rpx; background: linear-gradient(180deg, #2fc7ad, #a2e2d8); }
+.productList .search .input { height: 70rpx; border-radius: 999rpx; background: #fff; }
+.productList .nav { margin: 0 22rpx 18rpx; border-radius: 18rpx; background: #fff; }
+.productList .nav .item { height: 72rpx; line-height: 72rpx; }
+.productList .listBox { margin: 0 22rpx; }
+.productList .list .item.on { overflow: hidden; margin-bottom: 20rpx; border-radius: 22rpx; background: #fff; }
+.productList .list .item .pictrue.on { overflow: hidden; border-radius: 16rpx; }
+.productList .list .item .text.on { padding: 18rpx 18rpx 14rpx; }
+.productList .list .item .x-money .num { color: #ef3f45; font-size: 44rpx; }
+
+.ui11-mall-page .ui11-mall-hero { display:block; width:706rpx; height:313rpx; margin:20rpx 22rpx 0; border-radius:22rpx; overflow:hidden; }
 </style>
+
+

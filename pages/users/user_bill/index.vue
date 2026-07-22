@@ -169,4 +169,7 @@
 	.font_color{
 		color: #E93323 !important;
 	}
+
+/* ui1.1 visual override */
+.bill-details { min-height:100vh; background:#f7f8fa; }.bill-details .nav { padding:0 22rpx; background:#fff; }.bill-details .nav .item.on { color:#20bd9c; border-bottom-color:#29c8a6; }.bill-details .list { margin:22rpx; border-radius:22rpx; background:#fff; }
 </style>

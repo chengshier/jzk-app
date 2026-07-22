@@ -1,11 +1,13 @@
 <template>
 	<!-- 标题 -->
 	<view class="title-box acea-row row-between row-middle" :style="[...boxStyle]" @click="goPage">
-		<view class="acea-row row-middle" >
-			<view :style="[...titleStyle]">{{ titleTxt }}</view>
-			<view class="ml6" :style="[...titleFuStyle]">{{ titleFuTxt }}</view>
+		<view class="title-box__main">
+			<view class="title-box__left">
+				<view class="title-box__title" :style="[...titleStyle]">{{ titleTxt }}</view>
+				<view class="title-box__suffix ml6" :style="[...titleFuStyle]">{{ titleFuTxt }}</view>
+			</view>
 		</view>
-		<view v-if="!selectShow" :style="[...titleRightStyle]">{{ titleRightTxt }}<text :style="[...titleRightStyle]"  class="iconfont icon-xiangyou"></text></view>
+		<view v-if="!selectShow" class="title-box__right" :style="[...titleRightStyle]">{{ titleRightTxt }}<text :style="[...titleRightStyle]" class="iconfont icon-xiangyou"></text></view>
 	</view>
 </template>
 
@@ -138,6 +140,31 @@
 	.title-box{
 		background-repeat: no-repeat;
 		object-fit: contain;
+	}
+	.title-box__main {
+		flex: 1;
+		min-width: 0;
+	}
+	.title-box__left {
+		display: flex;
+		align-items: center;
+		min-width: 0;
+	}
+	.title-box__title {
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+	.title-box__suffix {
+		flex: 1;
+		min-width: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.title-box__right {
+		flex-shrink: 0;
+		margin-left: 16rpx;
+		white-space: nowrap;
 	}
 	.title {
 		font-size: 32rpx;

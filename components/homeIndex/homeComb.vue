@@ -1,6 +1,6 @@
 <template>
 	<!-- 组合组件 -->
-	<view class="page_count tui-skeleton" :data-theme="theme">
+	<view class="page_count tui-skeleton" :class="{ 'ui11-home-comb': isUi11 }" :data-theme="theme">
 		<!--logo-->
 		<view class="bg-img" :style="{'background-image': bgColor}">
 			<img :src="bgColor" alt="">
@@ -245,6 +245,10 @@
 			//分类是否展示，0展示，1不展示
 			tabShowConfig() {
 				return this.dataConfig.tabShowConfig.tabVal == 0;
+			},
+			// UI1.1 首页模板专用样式开关
+			isUi11() {
+				return this.dataConfig.ui11StyleConfig && this.dataConfig.ui11StyleConfig.tabVal === 1;
 			},
 			//搜索提示语
 			placeWords() {

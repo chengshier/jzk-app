@@ -1,5 +1,5 @@
 <template>
-	<view class='product-bg'>
+	<view class='product-bg' :style="{ height: height + 'rpx' }">
 		<swiper :indicator-dots="indicatorDots" :indicator-active-color="indicatorBg" :autoplay="autoplay" :circular="circular"
 		 :interval="interval" :duration="duration" @change="change" v-if="isPlay"> 
 		 <!-- #ifndef APP-PLUS -->
@@ -49,6 +49,7 @@
 	import {setThemeColor} from '@/utils/setTheme.js'
 	export default {
 		props: {
+			height: { type: Number, default: 750 },
 			imgUrls: {
 				type: Array,
 				default: function() {

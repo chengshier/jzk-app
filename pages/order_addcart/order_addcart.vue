@@ -1,5 +1,5 @@
 <template>
-	<view :data-theme="theme">
+	<view :data-theme="theme" class="ui11-cart-page">
 		<view class="cart_nav" :style='"height:"+navH+"rpx;"'>
 			<view class='navbarCon acea-row'>
 				<!-- #ifdef MP -->
@@ -133,13 +133,19 @@
 					<view class='pictrue'>
 						<image :src="urlDomain+'crmebimage/perset/staticImg/noCart.png'"></image>
 					</view>
-					<!-- 推荐商品 -->
-					<recommend ref="recommendIndex"></recommend>
 					<!-- #ifdef H5 -->
 					<view style="height:120rpx;"></view>
 					<!-- #endif -->
 				</view>
 			</view>
+		</view>
+		<view class="ui11-cart-settlement" v-if="cartList.valid.length && footerswitch">
+			<view class="ui11-cart-settlement__head"><text class="iconfont icon-youhuiquan"></text><text>优惠券</text><text class="ui11-cart-settlement__action" @tap="subOrder">结算时选择 <text class="iconfont icon-jiantou"></text></text></view>
+			<view class="ui11-cart-settlement__head"><text class="iconfont icon-dingdan"></text><text>订单结算</text></view>
+			<view class="ui11-cart-settlement__row"><text>商品金额（{{selectValue.length}}件）</text><text>￥{{selectCountPrice}}</text></view>
+			<view class="ui11-cart-settlement__row"><text>优惠券抵扣</text><text class="is-red">结算后计算</text></view>
+			<view class="ui11-cart-settlement__row"><text>运费</text><text class="is-green">以配送地址为准</text></view>
+			<view class="ui11-cart-settlement__total"><text>合计</text><text>￥{{selectCountPrice}}</text></view>
 		</view>
 		<!-- <view style="height:260rpx;"></view> -->
 		<view class='footer acea-row row-between-wrapper' v-if="cartList.valid.length > 0" :class="bottomNavigationIsCustom?'bottom-custom':''">
@@ -150,9 +156,9 @@
 				</checkbox-group>
 			</view>
 			<view class='money acea-row row-middle' v-if="footerswitch==true">
-				<text class='price-color'>￥{{selectCountPrice}}</text>
+				<view class="ui11-cart-total"><text>合计</text><text class='price-color'>￥{{selectCountPrice}}</text></view>
 				<form @submit="subOrder" report-submit='true'>
-					<button class='placeOrder bg_color' formType="submit">立即下单</button>
+					<button class='placeOrder bg_color' formType="submit">去结算</button>
 				</form>
 			</view>
 			<view class='button acea-row row-middle' v-else>
@@ -1005,9 +1011,6 @@
 			if (that.loadend) {
 				that.getInvalidList();
 			}
-			if (that.cartList.valid.length == 0 && that.cartList.invalid.length == 0) {
-				that.$refs.recommendIndex.get_host_product();
-			}
 		}
 	}
 </script>
@@ -1525,4 +1528,42 @@
 		bottom: calc(98rpx+ constant(safe-area-inset-bottom)); ///兼容 IOS<11.2/
 		bottom: calc(98rpx + env(safe-area-inset-bottom)); ///兼容 IOS>11.2/
 	}
+
+/* ui1.1 visual override */
+.cartBox { min-height: 100vh; background: linear-gradient(180deg, #a6e5db 0, #f7f8fa 320rpx); }
+.cartBox .cart_nav { color: #fff; background: transparent; }
+.cartBox .container_detail { margin: 18rpx 22rpx; padding: 18rpx; border-radius: 22rpx; background: #fff; }
+.cartBox .container_detail .item { padding: 20rpx 0; border-bottom-color: #edf0f0; }
+.cartBox .container_detail .pictrue { overflow: hidden; border-radius: 16rpx; }
+.cartBox .footer { border-top: 0; box-shadow: 0 -2rpx 18rpx rgba(33,45,44,.07); }
+.cartBox .footer .placeOrder { margin-right: 22rpx; border-radius: 999rpx; background: #29c8a6; }
+.ui11-cart-page { background:#f6f7f8; min-height:100vh; }
+.ui11-cart-settlement { margin:20rpx 22rpx 170rpx; padding:26rpx 30rpx; border-radius:24rpx; background:#fff; color:#34383b; }
+.ui11-cart-settlement__head { display:flex; align-items:center; min-height:58rpx; font-size:32rpx; font-weight:700; }
+.ui11-cart-settlement__head .iconfont { margin-right:14rpx; color:#25c5a4; font-size:36rpx; }
+.ui11-cart-settlement__action { margin-left:auto; color:#25c5a4; font-size:25rpx; font-weight:400; }
+.ui11-cart-settlement__row { display:flex; justify-content:space-between; padding:12rpx 0; color:#9ba1a4; font-size:26rpx; }
+.ui11-cart-settlement__row .is-red { color:#f0444c; }.ui11-cart-settlement__row .is-green { color:#20c4a3; }
+.ui11-cart-settlement__total { display:flex; justify-content:space-between; margin-top:16rpx; padding-top:22rpx; border-top:1rpx solid #edf1f0; font-size:31rpx; font-weight:700; }
+.ui11-cart-settlement__total text:last-child,.ui11-cart-total .price-color { color:#f0444c; font-size:42rpx; }
+.ui11-cart-total { display:flex; flex-direction:column; align-items:flex-end; margin-right:20rpx; font-size:23rpx; }
+.ui11-cart-page .footer { height:124rpx; padding:0 22rpx; background:#fff; box-shadow:0 -4rpx 20rpx rgba(26,52,46,.08); }
+
+/* UI1.1 cart reconstruction: targets the actual rendered cart nodes. */
+.ui11-cart-page > .cart_nav{position:relative;z-index:2;background:linear-gradient(120deg,#38c5b2,#74d9cd)}
+.ui11-cart-page > .cart_nav .nav_title,.ui11-cart-page > .cart_nav .select_nav{color:#fff}.ui11-cart-page > .cart_nav .nav_title{font-size:40rpx;font-weight:700}
+.ui11-cart-page .shoppingCart{min-height:calc(100vh - 88rpx);padding-bottom:172rpx;background:linear-gradient(180deg,#77d9ce 0,#c4eee9 206rpx,#f6f7f8 360rpx)}
+.ui11-cart-page .shoppingCart .labelNav{height:88rpx;margin:0 22rpx 18rpx;padding:0 16rpx;border-radius:0 0 28rpx 28rpx;background:rgba(255,255,255,.82);color:#17b596;font-size:24rpx}.ui11-cart-page .shoppingCart .labelNav .item{white-space:nowrap}.ui11-cart-page .shoppingCart .labelNav .iconfont{margin-right:7rpx;color:#1bc3a2}
+.ui11-cart-page .shoppingCart .cartBox{min-height:auto;margin:0 22rpx;overflow:hidden;border-radius:22rpx;background:#fff;box-shadow:0 12rpx 32rpx rgba(39,93,86,.06)}
+.ui11-cart-page .shoppingCart .cartBox>.nav{height:88rpx;padding:0 28rpx;border-bottom:1rpx solid #edf1f0;color:#34383b;font-size:30rpx;font-weight:700}.ui11-cart-page .shoppingCart .cartBox>.nav .num{color:#34383b}.ui11-cart-page .shoppingCart .cartBox>.nav .administrate{color:#20bfa0;font-size:25rpx;font-weight:400}.ui11-cart-page .shoppingCart .cartBox>.pad30{padding:0 24rpx}
+.ui11-cart-page .shoppingCart .list .item{min-height:186rpx;padding:24rpx 0;align-items:center;border-bottom:1rpx solid #eef1f1}.ui11-cart-page .shoppingCart .list .item .picTxt{flex:1;min-width:0;align-items:center}.ui11-cart-page .shoppingCart .list .item .pictrue{width:170rpx;height:170rpx;overflow:hidden;border-radius:16rpx;background:#f3f6f5}.ui11-cart-page .shoppingCart .list .item .pictrue image{width:100%;height:100%}.ui11-cart-page .shoppingCart .list .item .text{flex:1;min-width:0;height:170rpx;padding:4rpx 0 0 20rpx;box-sizing:border-box}.ui11-cart-page .shoppingCart .list .item .text .line1{color:#34383b;font-size:29rpx;font-weight:700}.ui11-cart-page .shoppingCart .list .item .text .infor{margin-top:10rpx;color:#a0a5a7;font-size:24rpx}.ui11-cart-page .shoppingCart .list .item .text .money{margin-top:24rpx;color:#ef4047;font-size:38rpx;font-weight:700}
+.ui11-cart-page .shoppingCart .list .item .carnum{width:150rpx;margin-left:10rpx;align-self:flex-end;border:1rpx solid #e6ecea;border-radius:40rpx;overflow:hidden}.ui11-cart-page .shoppingCart .list .item .carnum .reduce,.ui11-cart-page .shoppingCart .list .item .carnum .plus{width:46rpx;height:46rpx;line-height:42rpx;color:#16b99a;font-size:38rpx;font-weight:300;text-align:center}.ui11-cart-page .shoppingCart .list .item .carnum .num{width:54rpx;color:#34383b;font-size:27rpx;text-align:center}.ui11-cart-page .shoppingCart .list .item .carnum .plus.on{background:#2ac7a7;color:#fff}
+.ui11-cart-page .ui11-cart-settlement{margin:20rpx 22rpx 0;padding:0 28rpx 22rpx;border-radius:22rpx;background:#fff;box-shadow:0 12rpx 32rpx rgba(39,93,86,.04)}.ui11-cart-page .ui11-cart-settlement__head{min-height:74rpx;border-bottom:1rpx solid #eef1f1;font-size:31rpx}.ui11-cart-page .ui11-cart-settlement__head+.ui11-cart-settlement__head{margin-top:6rpx;border-bottom:0}.ui11-cart-page .ui11-cart-settlement__row{padding:10rpx 0;font-size:25rpx}.ui11-cart-page .ui11-cart-settlement__total{margin-top:14rpx;padding-top:20rpx}
+.ui11-cart-page>.footer{height:128rpx;padding:0 22rpx;border:0;box-shadow:0 -4rpx 22rpx rgba(30,64,59,.10)}.ui11-cart-page>.footer .placeOrder{width:290rpx;height:84rpx;margin-left:18rpx;border-radius:999rpx;line-height:84rpx;background:#29c8a6;font-size:36rpx;font-weight:700}
+
+/* UI1.1 cart top bar and empty state cleanup. */
+.ui11-cart-page>.cart_nav{height:148rpx!important;background:linear-gradient(135deg,#37c4b2,#7adbd0)!important}.ui11-cart-page>.cart_nav .navbarCon{height:100%;background:transparent}.ui11-cart-page>.cart_nav .select_nav{top:56rpx!important;left:22rpx;width:172rpx;height:56rpx;border-radius:32rpx;background:rgba(255,255,255,.34);box-sizing:border-box}.ui11-cart-page>.cart_nav .select_nav .px-20{padding:0 14rpx}.ui11-cart-page>.cart_nav .nav_title{top:58rpx!important;left:0;right:0;text-align:center;line-height:56rpx}.ui11-cart-page .shoppingCart{padding-top:0;background:linear-gradient(180deg,#7adbd0 0,#c8eee9 130rpx,#f6f7f8 300rpx)}.ui11-cart-page .shoppingCart .labelNav{margin-top:0;border-radius:0 0 24rpx 24rpx}.ui11-cart-page .shoppingCart .noCart{padding-bottom:80rpx}.ui11-cart-page .shoppingCart .noCart .pictrue{margin-top:110rpx}
+
+/* Tab page: no duplicate back or overflow capsule. */
+.ui11-cart-page>.cart_nav .select_nav{display:none!important}
 </style>

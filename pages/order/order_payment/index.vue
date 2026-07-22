@@ -515,4 +515,8 @@
 			}
 		}
 	}
+
+/* ui1.1 visual override */
+.payment { min-height: 100vh; background: #f7f8fa; }
+.payment .wrapper { margin: 22rpx; border-radius: 24rpx; background: #fff; }
 </style>

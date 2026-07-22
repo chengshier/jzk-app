@@ -89,7 +89,7 @@ export function getCityList() {
 			resolve(res.data);
 			let oneDay = 24 * 3600 * 1000;
 			Cache.setItem({
-				name: 'cityList',
+				name: 'cityListV2',
 				value: res.data,
 				expires: oneDay * 7
 			}); //设置七天过期时间

@@ -506,4 +506,8 @@
 		@include main_bg_color(theme);
 		border: none !important;
 	}
+
+/* ui1.1 visual override */
+.address-list { min-height: 100vh; background: #f7f8fa; }
+.address-list .item { margin: 20rpx 22rpx; border-radius: 22rpx; background: #fff; }
 </style>

@@ -1,0 +1,25 @@
+$ui11-primary: #29c8a6;
+$ui11-primary-dark: #18b796;
+$ui11-page: #f7f8fa;
+$ui11-text: #333333;
+$ui11-muted: #a7a9ad;
+$ui11-danger: #ef3f45;
+
+page { background: $ui11-page; color: $ui11-text; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
+.ui11-page { min-height: 100vh; padding: 24rpx 22rpx calc(128rpx + env(safe-area-inset-bottom)); background: $ui11-page; }
+.ui11-card { margin-bottom: 22rpx; padding: 28rpx; border-radius: 24rpx; background: #fff; box-shadow: 0 8rpx 20rpx rgba(37, 66, 61, .025); }
+.ui11-title { font-size: 38rpx; font-weight: 700; line-height: 1.35; color: $ui11-text; }
+.ui11-subtitle { color: $ui11-muted; font-size: 26rpx; }
+.ui11-row { display: flex; align-items: center; min-height: 96rpx; border-bottom: 1rpx solid #eceef0; }
+.ui11-row:last-child { border-bottom: 0; }
+.ui11-row__label { flex: 0 0 190rpx; font-size: 30rpx; color: $ui11-text; }
+.ui11-row__value { flex: 1; color: $ui11-muted; font-size: 30rpx; text-align: right; }
+.ui11-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 44rpx; padding: 0 18rpx; border: 1rpx solid rgba(41, 200, 166, .72); border-radius: 999rpx; color: $ui11-primary-dark; font-size: 23rpx; }
+.ui11-primary-btn { display: flex; align-items: center; justify-content: center; height: 96rpx; border-radius: 999rpx; background: $ui11-primary; color: #fff; font-size: 38rpx; font-weight: 600; }
+.ui11-fixed-action { position: fixed; right: 28rpx; bottom: calc(28rpx + env(safe-area-inset-bottom)); left: 28rpx; z-index: 20; }
+.ui11-nav { display: flex; align-items: center; justify-content: space-between; height: 92rpx; margin: -4rpx 0 18rpx; }
+.ui11-nav__back { width: 80rpx; color: #454545; font-size: 56rpx; line-height: 1; }
+.ui11-nav__title { flex: 1; text-align: center; font-size: 38rpx; font-weight: 600; }
+.ui11-nav__placeholder { width: 80rpx; }
+.ui11-section-title { display: flex; align-items: center; margin: 6rpx 0 22rpx; font-size: 34rpx; font-weight: 700; }
+.ui11-section-title::before { width: 10rpx; height: 34rpx; margin-right: 14rpx; border-radius: 999rpx; background: $ui11-primary; content: ''; }

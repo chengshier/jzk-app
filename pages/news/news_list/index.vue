@@ -340,4 +340,7 @@
 		color: #999;
 		margin-top: 22rpx;
 	}
+
+/* ui1.1 visual override */
+.newsList { min-height:100vh; padding:22rpx; background:#f7f8fa; }.newsList .swiper, .newsList .list { overflow:hidden; margin-bottom:20rpx; border-radius:22rpx; background:#fff; }
 </style>

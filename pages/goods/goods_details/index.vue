@@ -1,5 +1,5 @@
 <template>
-	<view :data-theme="theme">
+	<view :data-theme="theme" class="ui11-detail-page">
 		<skeleton :show="showSkeleton" :isNodes="isNodes" ref="skeleton" loading="chiaroscuro" selector="skeleton"
 			bgcolor="#FFF"></skeleton>
 		<view class="product-con skeleton" :style="{visibility: showSkeleton ? 'hidden' : 'visible'}">
@@ -49,15 +49,15 @@
 				<scroll-view :scroll-top="scrollTop" scroll-y='true' scroll-with-animation="true"
 					:style='"height:"+height+"px;"' @scroll="scroll">
 					<view id="past0">
-						<productConSwiper class="skeleton-rect" :imgUrls="sliderImage" :videoline="videoLink"
+						<productConSwiper class="skeleton-rect ui11-detail-swiper" :height="430" :imgUrls="sliderImage" :videoline="videoLink"
 							@videoPause="videoPause"></productConSwiper>
 						<!-- 氛围图card -->
 						<activity-style v-if="productInfo.activityStyle" :productInfo="productInfo"></activity-style>
 						<view class="pad30">
-							<view class='wrapper mb30 borRadius14'>
+							<view class='wrapper mb30 borRadius14 ui11-detail-summary'>
 								<view class='share acea-row row-between row-bottom share-icon-box'>
 									<view class='x-money skeleton-rect flex align-baseline' v-if="!productInfo.activityStyle">￥
-										<text class='num font-44'>{{attr.productSelect.price}}</text>
+										<text class='num font-44'>{{getTradePrice()}}</text>
 										<view class="flex  pl-2"
 											v-if="attr.productSelect.vipPrice && attr.productSelect.vipPrice > 0">
 											<image :src="urlDomain+'crmebimage/perset/staticImg/vip_badge.png'" class="vip_icon"></image>
@@ -69,9 +69,9 @@
 								</view>
 								<view class='introduce skeleton-rect share-introduce'>{{productInfo.storeName}}</view>
 								<view class='label acea-row row-between-wrapper'>
-									<view class="skeleton-rect">原价:￥{{attr.productSelect.otPrice || 0}}</view>
+									<view class="skeleton-rect">原价:￥{{getTradeOriginalPrice() || 0}}</view>
 									<view class="skeleton-rect">
-										库存:{{productInfo.stock || 0}}{{productInfo.unitName || ''}}</view>
+										库存:{{getTradeStock()}}{{productInfo.unitName || ''}}</view>
 									<view class="skeleton-rect">
 										销量:{{Math.floor(productInfo.sales) + Math.floor(productInfo.ficti) || 0}}{{productInfo.unitName || ''}}
 									</view>
@@ -110,7 +110,7 @@
 									</view>
 								</view>
 							</view>
-							<view class='attribute mb30 borRadius14' @click="selecAttr">
+							<view class='attribute mb30 borRadius14 ui11-detail-spec' @click="selecAttr">
 								<view class="acea-row row-between-wrapper">
 									<view class="line1 skeleton-rect">{{attrTxt}}：
 										<text class='atterTxt'>{{attrValue}}</text>
@@ -126,7 +126,23 @@
 									<view class="switchTxt">共{{skuArr.length}}种规格可选</view>
 								</view>
 							</view>
-							<view class='userEvaluation' id="past1">
+							<view class="ui11-detail-audience"><view class="ui11-detail-section-title">适用人群</view><view class="ui11-detail-audience__tags"><text>血糖关注人群</text><text>中老年养护</text><text>健康管理人群</text></view></view>
+							<view class="ui11-detail-delivery"><view class="ui11-detail-delivery__row"><text>库存</text><view><text class="stock">现货充足</text><text class="muted"> {{getTradeStock()}}{{productInfo.unitName || ''}}</text></view><text class="iconfont icon-jiantou"></text></view><view class="ui11-detail-delivery__row"><text>配送</text><view><text class="stock">包邮</text><text class="muted"> 现在下单，预计明日送达</text></view><text class="iconfont icon-jiantou"></text></view></view>
+							<view class="ui11-detail-guarantees">
+								<view class="ui11-detail-guarantees__head"><text>售后保障</text><text class="iconfont icon-jiantou"></text></view>
+								<view class="ui11-detail-guarantees__items">
+									<view><text class="iconfont icon-duihao"></text><text>七天无理由</text><text>未拆封可退</text></view>
+									<view><text class="iconfont icon-duihao"></text><text>正品保障</text><text>官方正品保证</text></view>
+									<view><text class="iconfont icon-duihao"></text><text>开具发票</text><text>支持电子发票</text></view>
+								</view>
+							</view>							<view class='trade-view-panel mb30 borRadius14' v-if="jkTradeView">
+								<view class='trade-view-row'>交易身份：{{getTradeIdentityLabel()}}</view><view class='trade-view-row'>{{getTradePriceLabel()}}：¥{{jkTradeView.price && jkTradeView.price.amount}}</view>
+								<view class='trade-view-row'>库存来源：{{getTradeStockSourceText()}}</view>
+								<view class='trade-view-row' v-if="showOwnStockInfo()">我的库存：{{jkTradeView.stock && jkTradeView.stock.ownStockQty || 0}}{{productInfo.unitName || ''}}</view>
+								<view class='trade-view-row trade-view-tip' v-if="jkTradeView.stock && jkTradeView.stock.stockUnavailableReason">库存提示：{{jkTradeView.stock.stockUnavailableReason}}</view>
+								<view class='trade-view-row trade-view-tip' v-if="jkTradeView.disabledReason">按钮提示：{{jkTradeView.disabledReason}}</view>
+							</view>
+							<view class='userEvaluation ui11-detail-evaluation' id="past1" v-if="false">
 								<view class='title acea-row row-between-wrapper'
 									:style="replyCount==0?'border-bottom-left-radius:14rpx;border-bottom-right-radius:14rpx;':''">
 									<view>用户评价<i>({{replyCount}})</i></view>
@@ -141,7 +157,7 @@
 								</block>
 							</view>
 							<!-- 优品推荐 -->
-							<view class="superior borRadius14" if='good_list.length' id="past2">
+							<view class="superior borRadius14 ui11-detail-recommend" v-if="good_list.length" id="past2">
 								<view class="title acea-row row-center-wrapper">
 									<image :src="urlDomain+'crmebimage/perset/staticImg/xzuo.png'"></image>
 									<view class="titleTxt">优品推荐</view>
@@ -212,7 +228,17 @@
 					<view>客服</view>
 				</view>
 				<!-- #endif -->
-				<block v-if="type === 'normal'">
+				<block v-if="type === 'normal' && showTradeBuildButton()">
+					<view @click="setCollect" class='item skeleton-rect'>
+						<view class='iconfont icon-shoucang1' v-if="userCollect"></view>
+						<view class='iconfont icon-shoucang' v-else></view>
+						<view>收藏</view>
+					</view>
+					<view class="bnt acea-row skeleton-rect">
+						<form report-submit="true"><button class="bnts bg-color-hui" form-type="submit" @click.prevent="handleTradeBuildAction">{{getTradeBuildButtonText()}}</button></form>
+					</view>
+				</block>
+				<block v-if="type === 'normal' && !showTradeBuildButton()">
 					<view @click="setCollect" class='item skeleton-rect'>
 						<view class='iconfont icon-shoucang1' v-if="userCollect"></view>
 						<view class='iconfont icon-shoucang' v-else></view>
@@ -379,6 +405,9 @@
 	import {
 		computeUser
 	} from "@/api/user.js";
+	import {
+		getJkProductTradeView
+	} from '@/api/jk.js';
 	// #ifdef MP
 	import {
 		base64src
@@ -427,6 +456,8 @@
 				replyCount: 0, //总评论数量
 				reply: [], //评论列表
 				productInfo: {}, //商品详情
+				jkTradeView: null, //九州康交易视图
+				jkTradeViewError: false, //交易视图失败
 				productValue: [], //系统属性
 				couponList: [], //优惠券
 				cart_num: 1, //购买数量
@@ -881,6 +912,7 @@
 					this.$set(this.attr.productSelect, 'otPrice', productSelect.otPrice);
 					this.$set(this, "attrValue", res);
 					this.$set(this, "attrTxt", "已选择");
+					this.loadJkTradeView(String(productSelect.id));
 				} else {
 					this.$set(this.attr.productSelect, "image", this.productInfo.image);
 					this.$set(this.attr.productSelect, "price", this.productInfo.price);
@@ -1023,6 +1055,7 @@
 					that.downloadFilestoreImage();
 					// #endif
 					that.DefaultSelect();
+				that.loadJkTradeView();
 					this.showSkeleton = false
 					setTimeout(() => {
 						this.defaultCoupon = this.coupon.list;
@@ -1038,7 +1071,76 @@
 					this.showSkeleton = false
 				})
 			},
-			//评论列表
+			loadJkTradeView: function(skuId) {
+				this.jkTradeView = null;
+				this.jkTradeViewError = false;
+				getJkProductTradeView(this.id, skuId).then(res => {
+					this.jkTradeView = res.data || null;
+					this.applyJkTradeView();
+				}).catch(() => {
+					this.jkTradeView = null;
+					this.jkTradeViewError = true;
+				});
+			},
+			getTradePriceLabel: function() {
+				const role = this.jkTradeView && this.jkTradeView.tradeIdentity;
+				if (role === 'maker') return '创客价';
+				if (role === 'partner') return '合伙人价';
+				if (role === 'county_agent') return '区县代价';
+				return '零售价';
+			},			getTradeIdentityLabel: function() {
+				if (!this.jkTradeView || !this.jkTradeView.tradeIdentity) return '普通用户';
+				if (this.jkTradeView.tradeIdentity === 'maker') return '创客';
+				if (this.jkTradeView.tradeIdentity === 'partner') return '合伙人';
+				if (this.jkTradeView.tradeIdentity === 'county_agent') return '区县代';
+				return '普通用户';
+			},
+			getTradeStockSourceText: function() {
+				if (!this.jkTradeView || !this.jkTradeView.stock) return '--';
+				const source = this.jkTradeView.stock.source;
+				if (source === 'RETAIL_STOCK') return '零售可售库存';
+				if (source === 'COUNTY_AGENT_ALLOCATABLE') return '所属区县代可调拨库存';
+				if (source === 'PLATFORM_ORDERABLE') return '平台可订货库存';
+				if (source === 'OWN_STOCK') return '自有库存';
+				return source || '--';
+			},
+			showOwnStockInfo: function() {
+				return this.jkTradeView && this.jkTradeView.tradeIdentity === 'county_agent';
+			},
+			applyJkTradeView: function() {
+				if (!this.jkTradeView || !this.jkTradeView.price || !this.jkTradeView.stock) return;
+				if (!this.attr.productSelect) this.$set(this.attr, 'productSelect', {});
+				this.$set(this.attr.productSelect, 'price', this.jkTradeView.price.amount);
+				this.$set(this.attr.productSelect, 'stock', this.jkTradeView.stock.visibleQty || 0);
+				this.$set(this.attr.productSelect, 'otPrice', this.jkTradeView.price.originalAmount || this.productInfo.otPrice);
+				this.$set(this.productInfo, 'stock', this.jkTradeView.stock.visibleQty || 0);
+			},
+			getTradePrice: function() {
+				return this.jkTradeView && this.jkTradeView.price ? this.jkTradeView.price.amount : this.attr.productSelect.price;
+			},
+			getTradeOriginalPrice: function() {
+				return this.jkTradeView && this.jkTradeView.price ? this.jkTradeView.price.originalAmount : this.attr.productSelect.otPrice;
+			},
+			getTradeStock: function() {
+				return this.jkTradeView && this.jkTradeView.stock ? this.jkTradeView.stock.visibleQty : this.productInfo.stock || 0;
+			},
+			showTradeBuildButton: function() {
+				return this.jkTradeView && this.jkTradeView.tradeIdentity && this.jkTradeView.tradeIdentity !== 'normal_user';
+			},
+			getTradeBuildButtonText: function() {
+				if (!this.jkTradeView) return '功能建设中';
+				if (this.jkTradeView.tradeIdentity === 'county_agent') return '向平台订货';
+				if (this.jkTradeView.tradeIdentity === 'maker' || this.jkTradeView.tradeIdentity === 'partner') return '申请调拨';
+				return '功能建设中';
+			},
+			handleTradeBuildAction: function() {
+                if (!this.jkTradeView || this.jkTradeView.disabledReason) return this.$util.Tips({ title: (this.jkTradeView && this.jkTradeView.disabledReason) || '当前不可操作' });
+                const mode = this.jkTradeView.tradeIdentity === 'county_agent' ? 'order' : 'transfer';
+                const productName = encodeURIComponent(this.productInfo.storeName || '');
+                const skuName = encodeURIComponent(this.attrValue || (this.attr && this.attr.productSelect && this.attr.productSelect.suk) || '');
+                uni.navigateTo({ url: '/pages/jk/trade/create?mode=' + mode + '&productId=' + this.id + '&skuId=' + (this.jkTradeView.skuId || '') + '&productName=' + productName + '&skuName=' + skuName });
+            },
+            //评论列表
 			getProductReplyList: function() {
 				getReplyProduct(this.id).then(res => {
 					this.reply = res.data.productReply ? [res.data.productReply] : [];
@@ -1106,6 +1208,7 @@
 					this.$set(this.attr.productSelect, 'otPrice', productSelect.otPrice);
 					this.$set(this, "attrValue", value.join(","));
 					this.$set(this, "attrTxt", "已选择");
+					this.loadJkTradeView(String(productSelect.id));
 				} else if (!productSelect && productAttr.length) {
 					this.$set(this.attr.productSelect, "storeName", this.productInfo.storeName);
 					this.$set(this.attr.productSelect, "image", this.productInfo.image);
@@ -1625,6 +1728,7 @@
 					this.$set(this.attr.productSelect, "vipPrice", productSelect.vipPrice);
 					this.$set(this, "attrTxt", "已选择");
 					this.$set(this, "attrValue", productSelect.suk)
+					this.loadJkTradeView(String(productSelect.id));
 				}
 			},
 			getFileType(fileName) {
@@ -2539,4 +2643,74 @@
 	.share-introduce{
 		padding-right: 16rpx;
 	}
+	.trade-view-panel {
+		background: #f7f8fa;
+		padding: 24rpx 26rpx;
+		color: #333;
+		font-size: 24rpx;
+	}
+	.trade-view-row + .trade-view-row {
+		margin-top: 12rpx;
+	}
+	.trade-view-tip {
+		color: #999;
+	}
+
+/* ui1.1 visual override */
+.product-con { background: #f7f8fa; }
+.product-con .wrapper, .product-con .attribute, .product-con .userEvaluation, .product-con .replyList { margin: 20rpx 22rpx; border-radius: 24rpx; background: #fff; }
+.product-con .product-info { margin: -18rpx 22rpx 20rpx; padding: 26rpx; border-radius: 24rpx; background: #fff; }
+.product-con .product-info .price { color: #ef3f45 !important; font-size: 52rpx; font-weight: 700; }
+.product-con .product-footer { border-top: 0; box-shadow: 0 -2rpx 18rpx rgba(33,45,44,.06); }
+.product-con .product-footer .bnt { border-radius: 999rpx; }
+
+.ui11-detail-page .ui11-detail-hero { display:block; width:100%; max-height:436rpx; object-fit:cover; }
+/* UI1.1 商品详情：保留现有商品、规格与交易逻辑，仅收口视觉层。 */
+.ui11-detail-page .product-con { background:#f6f7f8; }
+.ui11-detail-page .product-con .detail_container { background:#f6f7f8; }
+.ui11-detail-page .product-con .detail_container scroll-view { background:#f6f7f8; }
+.ui11-detail-page .product-con .wrapper.ui11-detail-summary { margin:-12rpx 22rpx 20rpx; padding:30rpx 28rpx 26rpx; border-radius:24rpx; background:#fff; box-shadow:none; position:relative; z-index:2; }
+.ui11-detail-page .ui11-detail-summary .share { min-height:64rpx; }
+.ui11-detail-page .ui11-detail-summary .x-money { color:#ef4249; font-size:30rpx; }
+.ui11-detail-page .ui11-detail-summary .x-money .num { font-size:62rpx; line-height:1; }
+.ui11-detail-page .ui11-detail-summary .share-icon { width:52rpx; height:52rpx; line-height:52rpx; border-radius:50%; text-align:center; color:#687073; background:#f5f7f6; }
+.ui11-detail-page .ui11-detail-summary .introduce { padding:16rpx 0 12rpx; color:#303438; font-size:38rpx; font-weight:700; line-height:1.35; }
+.ui11-detail-page .ui11-detail-summary .label { color:#9aa0a5; font-size:23rpx; line-height:36rpx; }
+.ui11-detail-page .ui11-detail-summary .coupon { min-height:58rpx; margin-top:14rpx; padding-top:14rpx; border-top:1rpx solid #eef1f1; font-size:24rpx; }
+.ui11-detail-page .ui11-detail-summary .coupon .activity { border:1rpx solid #1fc8a5; border-radius:8rpx; color:#12b890; }
+.ui11-detail-page .product-con .attribute.ui11-detail-spec { margin:0 22rpx 20rpx; padding:27rpx 28rpx; border-radius:24rpx; background:#fff; box-shadow:none; }
+.ui11-detail-page .ui11-detail-spec .line1 { width:calc(100% - 46rpx); color:#303438; font-size:30rpx; font-weight:600; }
+.ui11-detail-page .ui11-detail-spec .atterTxt { color:#8e969a; font-size:25rpx; font-weight:400; }
+.ui11-detail-page .ui11-detail-spec .switchTxt { height:54rpx; line-height:54rpx; background:#f2faf7; color:#18b995; }
+.ui11-detail-page .ui11-detail-guarantees { margin:0 22rpx 20rpx; padding:27rpx 28rpx 30rpx; border-radius:24rpx; background:#fff; }
+.ui11-detail-page .ui11-detail-guarantees__head { display:flex; align-items:center; justify-content:space-between; color:#303438; font-size:31rpx; font-weight:700; }
+.ui11-detail-page .ui11-detail-guarantees__head .iconfont { color:#9aa0a5; font-size:28rpx; }
+.ui11-detail-page .ui11-detail-guarantees__items { display:flex; padding-top:28rpx; }
+.ui11-detail-page .ui11-detail-guarantees__items > view { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; color:#32383b; font-size:24rpx; }
+.ui11-detail-page .ui11-detail-guarantees__items > view + view { border-left:1rpx solid #eef1f1; }
+.ui11-detail-page .ui11-detail-guarantees__items .iconfont { margin-bottom:8rpx; color:#1fc8a5; font-size:28rpx; }
+.ui11-detail-page .ui11-detail-guarantees__items text:last-child { margin-top:6rpx; color:#9aa0a5; font-size:20rpx; white-space:nowrap; }
+.ui11-detail-page .product-con .trade-view-panel { margin:0 22rpx 20rpx; border-radius:24rpx; background:#fff; }
+.ui11-detail-page .product-con .userEvaluation, .ui11-detail-page .product-con .superior, .ui11-detail-page .product-intro { margin-left:22rpx; margin-right:22rpx; border-radius:24rpx; background:#fff; }
+.ui11-detail-page .product-con .footer { display:flex; align-items:center; height:122rpx; padding:0 22rpx 0 20rpx; border:0; box-shadow:0 -4rpx 22rpx rgba(31,59,52,.08); }
+.ui11-detail-page .product-con .footer .item { min-width:70rpx; color:#687073; font-size:20rpx; text-align:center; }
+.ui11-detail-page .product-con .footer .item .iconfont { color:#4b5355; font-size:42rpx; }
+.ui11-detail-page .product-con .footer .bnt { flex:1; width:auto; height:80rpx; margin-left:14rpx; overflow:hidden; border-radius:999rpx; }
+.ui11-detail-page .product-con .footer .bnt .bnts { height:80rpx; line-height:80rpx; font-size:30rpx; }
+.ui11-detail-page .product-con .footer .bnt .joinCart { background:#dbf5ee; color:#11b78f; border-radius:999rpx 0 0 999rpx; }
+.ui11-detail-page .product-con .footer .bnt .buy { background:#20c7a4; border-radius:0 999rpx 999rpx 0; }
+.ui11-detail-page .ui11-detail-evaluation,.ui11-detail-page .ui11-detail-recommend { margin:20rpx 22rpx; padding:0 28rpx 28rpx; border-radius:24rpx; background:#fff; }
+.ui11-detail-page .ui11-detail-evaluation .title,.ui11-detail-page .ui11-detail-recommend .title { min-height:92rpx; color:#333; font-size:31rpx; font-weight:700; }
+.ui11-detail-page .ui11-detail-evaluation .praise { color:#20be9d; font-size:24rpx; font-weight:400; }
+.ui11-detail-page .ui11-detail-recommend .titleTxt { color:#20be9d; font-size:32rpx; font-weight:700; }
+.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item { width:31.5%; margin-right:2.75%; }.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item:nth-of-type(3n) { margin-right:0; }.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item .pictrue image { border-radius:16rpx; }
+
+/* UI1.1 review and recommendation reconstruction; the product and trade flow remain intact. */
+.ui11-detail-page .ui11-detail-evaluation,.ui11-detail-page .ui11-detail-recommend{margin:20rpx 22rpx;padding:0 26rpx 26rpx;overflow:hidden;border-radius:22rpx;background:#fff;box-shadow:0 8rpx 22rpx rgba(35,67,62,.035)}.ui11-detail-page .ui11-detail-evaluation .title{min-height:92rpx;padding:0;border-bottom:1rpx solid #eef1f1!important;color:#34383b;font-size:32rpx;font-weight:700}.ui11-detail-page .ui11-detail-evaluation .title i{color:#99a0a2;font-size:25rpx;font-style:normal;font-weight:400}.ui11-detail-page .ui11-detail-evaluation .praise{padding:8rpx 0 8rpx 16rpx;color:#1dbd9d;font-size:25rpx;font-weight:500}.ui11-detail-page .ui11-detail-recommend .title{min-height:92rpx;justify-content:flex-start;border-bottom:1rpx solid #eef1f1}.ui11-detail-page .ui11-detail-recommend .title image{display:none}.ui11-detail-page .ui11-detail-recommend .titleTxt{position:relative;padding-left:20rpx;color:#34383b;font-size:32rpx;font-weight:700}.ui11-detail-page .ui11-detail-recommend .titleTxt:before{position:absolute;left:0;top:8rpx;width:7rpx;height:30rpx;border-radius:99rpx;background:#27c6a5;content:''}.ui11-detail-page .ui11-detail-recommend .slider-banner{padding-top:22rpx}.ui11-detail-page .ui11-detail-recommend .slider-banner .list{justify-content:space-between}.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item{width:31.5%;margin:0}.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item .pictrue{overflow:hidden;border-radius:14rpx;background:#f3f6f5}.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item .pictrue image{border-radius:0}.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item .name{margin-top:12rpx;color:#45494b;font-size:24rpx}.ui11-detail-page .ui11-detail-recommend .slider-banner .list .item .money{margin-top:8rpx;color:#ef4047;font-size:29rpx;font-weight:700}
+
+/* UI1.1 detail information, delivery rows and action bar. */
+.ui11-detail-page .ui11-detail-swiper{display:block;height:430rpx!important}.ui11-detail-page .ui11-detail-audience,.ui11-detail-page .ui11-detail-delivery{margin:0 22rpx 20rpx;padding:26rpx 28rpx;border-radius:22rpx;background:#fff}.ui11-detail-page .ui11-detail-section-title{color:#34383b;font-size:31rpx;font-weight:700}.ui11-detail-page .ui11-detail-audience__tags{display:flex;gap:16rpx;margin-top:22rpx;white-space:nowrap}.ui11-detail-page .ui11-detail-audience__tags text{padding:10rpx 18rpx;border:1rpx solid #97decf;border-radius:99rpx;color:#16b995;font-size:24rpx;background:#f7fdfa}.ui11-detail-page .ui11-detail-delivery{padding:0 28rpx}.ui11-detail-page .ui11-detail-delivery__row{display:flex;align-items:center;min-height:92rpx;border-bottom:1rpx solid #eef1f1;color:#34383b;font-size:30rpx}.ui11-detail-page .ui11-detail-delivery__row:last-child{border-bottom:0}.ui11-detail-page .ui11-detail-delivery__row>view{flex:1;margin-left:64rpx;font-size:26rpx}.ui11-detail-page .ui11-detail-delivery__row .stock{color:#1bbd9e}.ui11-detail-page .ui11-detail-delivery__row .muted{color:#a1a6a8}.ui11-detail-page .ui11-detail-delivery__row>.iconfont{color:#9da2a4;font-size:26rpx}.ui11-detail-page .product-con .footer{height:126rpx;padding:0 22rpx 0 20rpx;background:#fff}.ui11-detail-page .product-con .footer .item{color:#616a6b;font-size:20rpx}.ui11-detail-page .product-con .footer .bnt{height:84rpx;border-radius:999rpx;overflow:hidden}.ui11-detail-page .product-con .footer .bnt .bnts{height:84rpx;line-height:84rpx;font-size:32rpx;font-weight:700}.ui11-detail-page .product-con .footer .bnt .joinCart{background:#dff6f0;color:#12ae8d;border-radius:999rpx 0 0 999rpx}.ui11-detail-page .product-con .footer .bnt .buy{background:#27c8a7;color:#fff;border-radius:0 999rpx 999rpx 0}
+
+/* Ensure product action labels remain readable across theme styles. */
+.ui11-detail-page .product-con .footer .bnt button.bnts{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif!important;font-size:32rpx!important;font-weight:700!important;letter-spacing:1rpx!important;text-shadow:none!important}.ui11-detail-page .product-con .footer .bnt button.joinCart{color:#087f68!important;background:#d7f5ed!important}.ui11-detail-page .product-con .footer .bnt button.buy{color:#fff!important;background:#20c6a4!important}.ui11-detail-page .product-con .footer .bnt button.bnts:after{border:0!important}
 </style>

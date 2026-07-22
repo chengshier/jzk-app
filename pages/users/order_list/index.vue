@@ -529,4 +529,8 @@
 	// .bg-color {
 	// 	@include main_bg_color(theme);
 	// }
+
+/* ui1.1 visual override */
+.order-list { min-height: 100vh; background: #f7f8fa; }
+.order-list .order-data { margin: 18rpx 22rpx; border-radius: 22rpx; background: #fff; }
 </style>

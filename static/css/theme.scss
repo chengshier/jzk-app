@@ -10,6 +10,7 @@
 	[data-theme = "theme3"] & {color: $main-color-theme3 !important;}
 	[data-theme = "theme4"] & {color: $main-color-theme4 !important;}
 	[data-theme = "theme5"] & {color: $main-color-theme5 !important;}
+	[data-theme = "theme6"] & {color: $main-color-theme6 !important;}
 }
 
 //辅色
@@ -20,6 +21,7 @@
 	[data-theme = "theme3"] & {color: $second-color-theme3 !important;}
 	[data-theme = "theme4"] & {color: $second-color-theme4 !important;}
 	[data-theme = "theme5"] & {color: $second-color-theme5 !important;}
+	[data-theme = "theme6"] & {color: $second-color-theme6 !important;}
 }
 
 //价格色
@@ -30,6 +32,7 @@
 	[data-theme = "theme3"] & {color: $price-color-theme3 !important;}
 	[data-theme = "theme4"] & {color: $price-color-theme4 !important;}
 	[data-theme = "theme5"] & {color: $price-color-theme5 !important;}
+	[data-theme = "theme6"] & {color: $price-color-theme6 !important;}
 }
 
 //左侧按钮
@@ -40,6 +43,7 @@
 	[data-theme = "theme3"] & {background-color: $left-button-color3 !important;}
 	[data-theme = "theme4"] & {background-color: $left-button-color4 !important;}
 	[data-theme = "theme5"] & {background-color: $left-button-color5 !important;}
+	[data-theme = "theme6"] & {background-color: $left-button-color6 !important;}
 }
 // 详情页优惠券
 @mixin coupons_border_color($color) { 
@@ -49,6 +53,7 @@
 	[data-theme = "theme3"] & {border: $coupons-border3;}
 	[data-theme = "theme4"] & {border: $coupons-border4;}
 	[data-theme = "theme5"] & {border: $coupons-border5;}
+	[data-theme = "theme6"] & {border: $coupons-border6;}
 }
 
 //分类页二级菜单按钮
@@ -59,6 +64,7 @@
 	[data-theme = "theme3"] & {background-color: $nav-two-btn3 !important;}
 	[data-theme = "theme4"] & {background-color: $nav-two-btn4 !important;}
 	[data-theme = "theme5"] & {background-color: $nav-two-btn5 !important;}
+	[data-theme = "theme6"] & {background-color: $nav-two-btn6 !important;}
 }
 
 @mixin white_left_border{ 
@@ -78,6 +84,7 @@
 	[data-theme = "theme3"] & {border-bottom: $tab-border-bottom3 !important;}
 	[data-theme = "theme4"] & {border-bottom: $tab-border-bottom4 !important;}
 	[data-theme = "theme5"] & {border-bottom: $tab-border-bottom5 !important;}
+	[data-theme = "theme6"] & {border-bottom: $tab-border-bottom6 !important;}
 }
 
 // 优惠券淡色
@@ -88,6 +95,7 @@
 	[data-theme = "theme3"] & {background-color: $coupons-light-color3 !important;}
 	[data-theme = "theme4"] & {background-color: $coupons-light-color4 !important;}
 	[data-theme = "theme5"] & {background-color: $coupons-light-color5 !important;}
+	[data-theme = "theme6"] & {background-color: $coupons-light-color6 !important;}
 }
 
 
@@ -99,6 +107,7 @@
 	[data-theme = "theme3"] & {background-color: $main-color-theme3 !important;}
 	[data-theme = "theme4"] & {background-color: $main-color-theme4 !important;}
 	[data-theme = "theme5"] & {background-color: $main-color-theme5 !important;}
+	[data-theme = "theme6"] & {background-color: $main-color-theme6 !important;}
 }
 
 
@@ -110,6 +119,7 @@
 	 [data-theme = "theme3"] & {background: linear-gradient($main-gradient-color3);}
 	 [data-theme = "theme4"] & {background: linear-gradient($main-gradient-color4);}
 	 [data-theme = "theme5"] & {background: linear-gradient($main-gradient-color5);}
+	 [data-theme = "theme6"] & {background: linear-gradient($main-gradient-color6);}
 }
 
 //辅渐变色
@@ -120,6 +130,7 @@
 	 [data-theme = "theme3"] & {background: linear-gradient($second-gradient-color3);}
 	 [data-theme = "theme4"] & {background: linear-gradient($second-gradient-color4);}
 	 [data-theme = "theme5"] & {background: linear-gradient($second-gradient-color5); }
+	 [data-theme = "theme6"] & {background: linear-gradient($second-gradient-color6); }
 }
 
 // 首页渐变
@@ -130,6 +141,7 @@
 	 [data-theme = "theme3"] & {background: -webkit-linear-gradient($index-gradient-color3);}
 	 [data-theme = "theme4"] & {background: -webkit-linear-gradient($index-gradient-color4);}
 	 [data-theme = "theme5"] & {background: -webkit-linear-gradient($index-gradient-color5);}
+	 [data-theme = "theme6"] & {background: -webkit-linear-gradient($index-gradient-color6);}
 }
 
 
@@ -140,6 +152,7 @@
 	 [data-theme = "theme3"] & {background: -webkit-linear-gradient($miaosha-grradient-color3);}
 	 [data-theme = "theme4"] & {background: -webkit-linear-gradient($miaosha-grradient-color4); }
 	 [data-theme = "theme5"] & {background: -webkit-linear-gradient($miaosha-grradient-color5); }
+	 [data-theme = "theme6"] & {background: -webkit-linear-gradient($miaosha-grradient-color6); }
 }
 
 @mixin coupons-gradient($color) {
@@ -149,6 +162,7 @@
 	 [data-theme = "theme3"] & {background-image: -webkit-linear-gradient($index-gradient-color3); }
 	 [data-theme = "theme4"] & {background-image: -webkit-linear-gradient($coupons-gradient-color4);}
 	 [data-theme = "theme5"] & {background-image: -webkit-linear-gradient($coupons-gradient-color5); }
+	 [data-theme = "theme6"] & {background-image: -webkit-linear-gradient($coupons-gradient-color6); }
 }
 
 //砍价按钮 bargain-btn-color1
@@ -159,6 +173,7 @@
 	 [data-theme = "theme3"] & {background-image: -webkit-linear-gradient($bargain-btn-color3);}
 	 [data-theme = "theme4"] & {background-image: -webkit-linear-gradient($bargain-btn-color4);}
 	 [data-theme = "theme5"] & {background-image: -webkit-linear-gradient($bargain-btn-color5); }
+	 [data-theme = "theme6"] & {background-image: -webkit-linear-gradient($bargain-btn-color6); }
 }
 
  //砍价弹框小三角
@@ -169,6 +184,7 @@
 	 [data-theme = "theme3"] & {border-color: $bragin-border-rate3;}
 	 [data-theme = "theme4"] & {border-color: $bragin-border-rate4;}
 	 [data-theme = "theme5"] & {border-color: $bragin-border-rate5;}
+	 [data-theme = "theme6"] & {border-color: $bragin-border-rate6;}
  }
  
  // 手机登录渐变色
@@ -179,4 +195,5 @@
  	 [data-theme = "theme3"] & {background: -webkit-linear-gradient($logn-gradient-color3) !important;}
  	 [data-theme = "theme4"] & {background: -webkit-linear-gradient($logn-gradient-color4) !important;}
  	 [data-theme = "theme5"] & {background: -webkit-linear-gradient($logn-gradient-color5) !important;}
+ 	 [data-theme = "theme6"] & {background: -webkit-linear-gradient($logn-gradient-color6) !important;}
  }

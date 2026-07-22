@@ -168,4 +168,7 @@
 	.return-list .goodWrapper .iconfont.powder {
 		color: #f8c1bd;
 	}
+
+/* ui1.1 visual override */
+.return-list { min-height:100vh; background:#f7f8fa; }.return-list .goodWrapper { margin-bottom:20rpx; border-radius:22rpx; background:#fff; box-shadow:0 8rpx 20rpx rgba(33,45,44,.025); }
 </style>

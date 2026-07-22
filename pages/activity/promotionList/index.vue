@@ -261,4 +261,7 @@
 		color: #666;
 		background-color: #f5f5f5;
 	}
+
+/* ui1.1 visual override */
+.saleBox { min-height:100vh; background:#f7f8fa; }.saleBox .header { overflow:hidden; border-radius:0 0 26rpx 26rpx; }.saleBox .list { margin:22rpx; border-radius:22rpx; background:#fff; }
 </style>

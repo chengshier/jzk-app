@@ -16,7 +16,7 @@
 					<view v-if="navIndex === 0">
 						<view v-for="(item, index) in styleConfig" :key="index">
 							<!-- 新闻简报 -->
-							<news v-if="item.name == 'news'&&!item.isHide" :dataConfig="item"></news>
+							<news v-if="item.name == 'news'&&!item.isHide&&!styleConfig.some(config => config.name == 'consultationList'&&!config.isHide)" :dataConfig="item"></news>
 							<!-- 导航组 -->
 							<menus v-if="item.name == 'menus'&&!item.isHide" :dataConfig="item"></menus>
 							<!-- 文章列表 -->
@@ -42,6 +42,8 @@
 							<!-- 富文本-->
 							<rich-text-editor v-if="item.name == 'richTextEditor'&&!item.isHide"
 								:dataConfig="item"></rich-text-editor>
+							<health-data-card v-if="item.name == 'healthDataCard'&&!item.isHide" :dataConfig="item"></health-data-card>
+							<consultation-list v-if="item.name == 'consultationList'&&!item.isHide" :dataConfig="item"></consultation-list>
 							<!-- 辅助空白-->
 							<blank-page v-if="item.name == 'blankPage'&&!item.isHide" :dataConfig="item"></blank-page>
 							<!-- 标题 -->
@@ -146,6 +148,8 @@
 	import homeTab from '@/components/homeIndex/homeTab';
 	import blankPage from '@/components/homeIndex/blankPage';
 	import homeTitle from '@/components/homeIndex/title';
+	import healthDataCard from '@/components/homeIndex/healthDataCard';
+	import consultationList from '@/components/homeIndex/consultationList';
 	import hotSpot from '@/components/homeIndex/hotSpot.vue';
 	import group from "@/components/homeIndex/group.vue";
 	import bargain from "@/components/homeIndex/bargain.vue";
@@ -204,6 +208,8 @@
 			homeTab,
 			blankPage,
 			homeTitle,
+			healthDataCard,
+			consultationList,
 			hotSpot,
 			group,
 			bargain,
@@ -924,4 +930,13 @@
 	.footerBottom-h10 {
 		height: 20rpx;
 	}
+
+/* ui1.1 visual override */
+.page-index { background: #f7f8fa !important; }
+.page-index .page_content { padding: 0 22rpx 16rpx; }
+.productList .sort { margin: 18rpx 0 0; padding: 20rpx 8rpx; border-radius: 24rpx; background: #fff; }
+.productList .sort .item .pictrue { overflow: hidden; border-radius: 16rpx; }
+.footerBottom, .footerBottom-h10 { height: 112rpx !important; }
 </style>
+
+

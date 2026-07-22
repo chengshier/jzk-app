@@ -674,4 +674,7 @@
 		font-size: 26rpx;
 		color: #aaa;
 	}
+
+/* ui1.1 visual override */
+.user_payment { min-height:100vh; background:#f7f8fa; }.user_payment .payment-top { border-radius:0 0 30rpx 30rpx; background:linear-gradient(180deg,#2fc7ad,#92e0d4); }.user_payment .payment-list { margin:22rpx; border-radius:22rpx; background:#fff; }
 </style>

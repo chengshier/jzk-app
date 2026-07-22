@@ -1,7 +1,12 @@
 <template>
 	<!-- 新闻播报 -->
 	<view>
-		<view v-if="itemNew.length" class='news acea-row row-middle' :style="[boxStyle]">
+		<view v-if="itemNew.length && isUi11" class="ui11-reminder" :style="[boxStyle]" @click="moreTab(itemNew[0].chiild[1].val)">
+			<view class="ui11-reminder__brand"><image :src="logoConfig"></image></view>
+			<text class="ui11-reminder__message line1" :style="{ color: textColor }">{{ itemNew[0].chiild[0].val }}</text>
+			<text class="ui11-reminder__arrow iconfont icon-xiangyou"></text>
+		</view>
+		<view v-else-if="itemNew.length" class='news acea-row row-middle' :style="[boxStyle]">
 			<view class='pictrue skeleton-rect'>
 				<image :src='logoConfig'></image>
 			</view>
@@ -66,6 +71,9 @@
 			};
 		},
 		computed: {
+			isUi11() {
+				return this.dataConfig.ui11StyleConfig && this.dataConfig.ui11StyleConfig.tabVal === 1;
+			},
 			//文本列表
 			itemNew() {
 				return this.dataConfig.listConfig.list
@@ -184,4 +192,30 @@
 	.news .swiperTxt swiper {
 		height: 100%;
 	}
+	.news.ui11-news {
+		box-shadow: none;
+	}
+
+	.news.ui11-news .pictrue {
+		width: 88rpx;
+		height: 30rpx;
+		padding-right: 14rpx;
+	}
+
+	.news.ui11-news .swiperTxt {
+		width: auto;
+		flex: 1;
+		height: 64rpx;
+		line-height: 64rpx;
+		margin-left: 14rpx;
+	}
+
+	.news.ui11-news .swiperTxt .text .newsTitle {
+		font-size: 24rpx;
+	}
+	.ui11-reminder { display:flex; align-items:center; min-height:82rpx; box-sizing:border-box; }
+	.ui11-reminder__brand { flex:none; width:170rpx; height:36rpx; padding-right:20rpx; border-right:1rpx solid #dfe5e3; }
+	.ui11-reminder__brand image { display:block; width:100%; height:100%; }
+	.ui11-reminder__message { flex:1; min-width:0; padding:0 20rpx; font-size:28rpx; font-weight:500; line-height:40rpx; }
+	.ui11-reminder__arrow { flex:none; color:#9aa0a5; font-size:28rpx; }
 </style>
