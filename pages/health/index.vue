@@ -1,21 +1,283 @@
 <template>
-  <view class="ui11-page health-page">
-    <view class="health-hero">
-      <view class="health-hero__nav"><text class="health-hero__back" @tap="goBack">‹</text><text>健康</text><text class="health-hero__space"></text></view>
-      <view class="health-tabs"><text class="active">血糖</text><text>尿酸</text><text>血压</text><text>体重</text><text>更多指标</text></view>
+  <view class="page">
+    <view class="hero">
+      <view class="title">健康中心</view>
+      <view class="sub">健康数据仅本人和获得授权的健康顾问可查看</view>
     </view>
-    <view class="ui11-card glucose-card">
-      <view class="glucose-time">2026-05-20&nbsp;&nbsp;06:22　⌾</view>
-      <view class="glucose-summary"><view><text class="glucose-value">2.3</text><text class="glucose-unit">mmol/l</text></view><view class="glucose-device">品牌：三诺<br/><text>剩余2小时</text></view></view>
-      <view class="line" />
-      <view class="glucose-heading"><text>〰 动态血糖曲线</text><view class="all-data">全部数据</view></view>
-      <view class="range-tabs"><text>4小时</text><text>8小时</text><text>12小时</text><text class="selected">24小时</text></view>
-      <view class="chart"><view class="chart-line chart-line--high"></view><view class="chart-line chart-line--low"></view><view class="chart-zigzag">╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲</view></view>
-      <view class="metric-grid"><view><text>达标时间</text><b>13.5<small>%</small></b></view><view><text>最大血糖波动</text><b>3.8<small>mmol/l</small></b></view><view><text>最高血糖</text><b>5.8<small>mmol/l</small></b></view><view><text>最低血糖</text><b>2.0<small>mmol/l</small></b></view></view>
+
+    <view class="card latest">
+      <view>
+        <text class="label">最近血糖</text>
+        <view v-if="dashboard.latestGlucose">
+          <text class="value">{{ dashboard.latestGlucose.numericValue }}</text>
+          <text class="unit">{{ dashboard.latestGlucose.unit || 'mmol/L' }}</text>
+          <view class="time">
+            {{ dashboard.latestGlucose.measuredAt }} · {{ dashboard.latestGlucose.periodCode || '未标记时段' }}
+          </view>
+        </view>
+        <view v-else class="empty">暂无血糖数据</view>
+      </view>
+      <view class="risk" :class="riskClass">{{ latestGlucoseRiskText }}</view>
     </view>
-    <view class="ui11-card input-card"><view class="ui11-section-title">手动输入</view><navigator url="/pages/jk/health/glucose" class="input-main">输入血糖值</navigator><view class="quick-links"><navigator url="/pages/jk/health/diet">记饮食　＋</navigator><navigator url="/pages/jk/health/exercise">记运动　＋</navigator><navigator url="/pages/jk/health/medicine">记用药　＋</navigator></view></view>
+
+    <view class="card stats">
+      <view>
+        <text class="stat-value">{{ dashboard.todayRecordCount || 0 }}</text>
+        <text>今日记录</text>
+      </view>
+      <view>
+        <text class="stat-value">{{ dashboard.activeAlertCount || 0 }}</text>
+        <text>待处理预警</text>
+      </view>
+      <view>
+        <text class="stat-value">{{ dashboard.boundDeviceCount || 0 }}</text>
+        <text>绑定设备</text>
+      </view>
+    </view>
+
+    <view class="grid">
+      <navigator url="/pages/jk/health/glucose">记录血糖</navigator>
+      <navigator url="/pages/jk/health/diet">记录饮食</navigator>
+      <navigator url="/pages/jk/health/exercise">记录运动</navigator>
+      <navigator url="/pages/jk/health/medicine">记录用药</navigator>
+      <navigator url="/pages/jk/health/dataList">全部数据</navigator>
+      <navigator url="/pages/jk/health/trend">血糖趋势</navigator>
+      <navigator url="/pages/jk/health/alerts">异常提醒</navigator>
+      <navigator url="/pages/jk/health/device">设备管理</navigator>
+      <navigator url="/pages/jk/health/profile">健康档案</navigator>
+      <navigator url="/pages/jk/health/authorization">授权管理</navigator>
+      <navigator v-if="canViewAuthorized" url="/pages/jk/health/authorizedOwners">授权用户</navigator>
+    </view>
+
+    <view class="card recent">
+      <view class="section-title">最近记录</view>
+      <view v-for="item in recentRecords" :key="item.id" class="record">
+        <view>
+          <text class="record-title">{{ item.dataTypeText || item.dataType }}</text>
+          <text class="record-time">{{ item.measuredAt }}</text>
+        </view>
+        <text class="record-value">{{ recordValue(item) }}</text>
+      </view>
+      <view v-if="!recentRecords.length" class="empty">暂无记录</view>
+    </view>
   </view>
-</template><script>export default { methods:{ goBack(){ const pages=getCurrentPages(); if(pages.length>1){ uni.navigateBack(); }else{ uni.switchTab({url:"/pages/index/index"}); } } } }</script>
+</template>
+
+<script>
+import { getHealthDashboard } from '@/api/health.js';
+import { getJkPermissionContext } from '@/api/jk.js';
+
+export default {
+  data() {
+    return {
+      dashboard: {},
+      permissions: []
+    };
+  },
+  computed: {
+    canViewAuthorized() {
+      return this.permissions.indexOf('health.data.view.authorized') > -1;
+    },
+    latestGlucoseRiskText() {
+      return (this.dashboard.latestGlucose && this.dashboard.latestGlucose.riskLevelText) || '正常';
+    },
+    recentRecords() {
+      return this.dashboard.recentRecords || [];
+    },
+    riskClass() {
+      const level = this.dashboard.latestGlucose && this.dashboard.latestGlucose.riskLevel;
+      if (level === 'HIGH') {
+        return 'high';
+      }
+      if (level === 'MEDIUM') {
+        return 'medium';
+      }
+      return 'normal';
+    }
+  },
+  onShow() {
+    this.load();
+  },
+  methods: {
+    value(res) {
+      return res && res.data ? res.data : (res || {});
+    },
+    load() {
+      getHealthDashboard().then(res => {
+        this.dashboard = this.value(res);
+      }).catch(() => {
+        this.dashboard = {};
+      });
+
+      getJkPermissionContext().then(res => {
+        const data = this.value(res);
+        this.permissions = data.permissions || [];
+      }).catch(() => {
+        this.permissions = [];
+      });
+    },
+    recordValue(item) {
+      if (item.numericValue != null) {
+        return item.numericValue + (item.unit || '');
+      }
+      return this.summary(item);
+    },
+    summary(item) {
+      try {
+        const detail = JSON.parse(item.detail || '{}');
+        return detail.content || detail.remark || '';
+      } catch (error) {
+        return '';
+      }
+    }
+  }
+};
+</script>
+
 <style lang="scss" scoped>
-.health-page { padding-top: 0; }.health-hero { margin: 0 -22rpx; padding: 24rpx 26rpx 0; color: #fff; background: linear-gradient(180deg, #2dc7ad 0%, #93ded4 100%); }.health-hero__nav { display:flex; align-items:center; justify-content:space-between; height: 110rpx; font-size: 39rpx; font-weight:600; }.health-hero__back{width:80rpx;font-size:68rpx;font-weight:300}.health-hero__space{width:80rpx}.health-tabs{display:flex;justify-content:space-between;height:84rpx;align-items:center;font-size:30rpx}.health-tabs .active{color:#075d54;font-weight:700}.glucose-card{margin-top:22rpx}.glucose-time,.glucose-device{color:#a7a9ad;font-size:26rpx}.glucose-summary{display:flex;align-items:center;justify-content:space-between;margin:24rpx 0}.glucose-value{font-size:110rpx;font-weight:700;line-height:1}.glucose-unit{margin-left:12rpx;color:#a7a9ad;font-size:30rpx}.glucose-device{text-align:right;line-height:2.2}.glucose-device text{color:#333;font-weight:600;font-size:30rpx}.line{height:1rpx;background:#e9eaec}.glucose-heading{display:flex;align-items:center;justify-content:space-between;margin:24rpx 0;font-size:32rpx;font-weight:700}.all-data{padding:15rpx 30rpx;border-radius:999rpx;background:#11c7a4;color:#fff;font-size:27rpx}.range-tabs{display:flex;background:#f5f6f7}.range-tabs text{flex:1;padding:18rpx 0;text-align:center;color:#adb0b4;font-size:27rpx}.range-tabs .selected{background:#fff;color:#333;font-weight:600}.chart{position:relative;height:350rpx;margin:36rpx 16rpx 20rpx;border:1rpx solid #d9dadd;background:linear-gradient(#fff 24%,#ececec 25%,#ececec 65%,#fff 66%)}.chart-line{position:absolute;right:0;left:0;height:2rpx}.chart-line--high{top:36%;background:#f4b45e}.chart-line--low{top:74%;background:#f04d54}.chart-zigzag{position:absolute;right:22rpx;bottom:72rpx;left:22rpx;overflow:hidden;color:#58636f;font-size:38rpx;letter-spacing:-4rpx;transform:rotate(-2deg)}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);padding:22rpx 8rpx;background:#f8f8f8}.metric-grid view{display:flex;flex-direction:column;gap:12rpx;text-align:center;font-size:22rpx}.metric-grid b{color:#20c39f;font-size:38rpx}.metric-grid small{margin-left:3rpx;color:#a7a9ad;font-size:18rpx;font-weight:400}.input-main{display:flex;height:140rpx;align-items:center;justify-content:center;border-radius:16rpx;background:#f6f7f7;font-size:39rpx;font-weight:600}.quick-links{display:flex;gap:22rpx;margin-top:28rpx}.quick-links navigator{flex:1;padding:22rpx 0;border-radius:12rpx;background:#f8f8f8;text-align:center;font-size:26rpx}
+.page {
+  min-height: 100vh;
+  padding: 28rpx;
+  background: #f5f7f7;
+}
+
+.hero {
+  padding: 40rpx 12rpx 26rpx;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 700;
+}
+
+.sub {
+  margin-top: 12rpx;
+  color: #7d8585;
+  font-size: 25rpx;
+}
+
+.card {
+  margin-bottom: 22rpx;
+  padding: 28rpx;
+  background: #fff;
+  border-radius: 24rpx;
+}
+
+.latest {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.label {
+  color: #899;
+  font-size: 26rpx;
+}
+
+.value {
+  font-size: 76rpx;
+  font-weight: 700;
+  color: #1ab99a;
+}
+
+.unit {
+  margin-left: 10rpx;
+  color: #899;
+}
+
+.time {
+  font-size: 23rpx;
+  color: #999;
+}
+
+.empty {
+  padding: 28rpx 0;
+  text-align: center;
+  color: #aaa;
+}
+
+.risk {
+  padding: 12rpx 20rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+}
+
+.normal {
+  background: #e7f8f4;
+  color: #119d83;
+}
+
+.medium {
+  background: #fff3d9;
+  color: #c58511;
+}
+
+.high {
+  background: #ffe7e7;
+  color: #d33;
+}
+
+.stats {
+  display: flex;
+  margin-top: 0;
+}
+
+.stats view {
+  flex: 1;
+  text-align: center;
+}
+
+.stats text {
+  display: block;
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #111827;
+}
+
+.stats view text:last-child {
+  font-size: 23rpx;
+  color: #999;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16rpx;
+  margin-bottom: 22rpx;
+}
+
+.grid navigator {
+  padding: 28rpx 8rpx;
+  background: #fff;
+  border-radius: 18rpx;
+  text-align: center;
+  font-size: 25rpx;
+}
+
+.section-title {
+  margin-bottom: 15rpx;
+  font-size: 31rpx;
+  font-weight: 600;
+}
+
+.record {
+  display: flex;
+  justify-content: space-between;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.record-title,
+.record-time,
+.record-value {
+  display: block;
+}
+
+.record-time {
+  color: #999;
+  font-size: 22rpx;
+}
 </style>

@@ -12,6 +12,10 @@ export function getJkIdentityApplyList(data) {
   return request.get('jk/identity/apply/list', data);
 }
 
+export function getJkIdentityApplyDetail(id) {
+  return request.get('jk/identity/apply/' + id);
+}
+
 export function getJkIdentityStatus() {
   return request.get('jk/identity/status');
 }
@@ -23,6 +27,10 @@ export function getJkIdentityRegionOptions() {
 export function getJkProductTradeView(productId, skuId) {
   const query = skuId ? ('?skuId=' + skuId) : '';
   return request.get('jk/product/trade-view/' + productId + query, {}, { noAuth: true });
+}
+
+export function getJkProductCatalog(keyword) {
+  return request.get('jk/product/catalog', { keyword: keyword || '' });
 }
 
 export function createJkPlatformOrder(data) { return request.post('jk/platform-order/create', data); }
@@ -55,3 +63,35 @@ export function getJkWithdrawConfig() { return request.get('jk/withdraw/config')
 export function applyJkWithdraw(data) { return request.post('jk/withdraw/apply', data); }
 export function getJkWithdrawList(data) { return request.get('jk/withdraw/list', data); }
 export function getJkWithdrawDetail(id) { return request.get('jk/withdraw/detail/' + id); }
+
+// 团队、推广二维码与换绑
+export function getJkTeamSummary() { return request.get('jk/team/summary'); }
+export function getJkPromotionQrcode() { return request.get('jk/team/qrcode'); }
+export function getJkEligibleParentOptions(data) { return request.get('jk/team/relation-change/parent-options', data); }
+export function applyJkRelationChange(data) { return request.post('jk/team/relation-change/apply', data); }
+export function getJkRelationChangeList(data) { return request.get('jk/team/relation-change/list', data); }
+export function getJkRelationChangeDetail(id) { return request.get('jk/team/relation-change/' + id); }
+export function cancelJkRelationChange(id, data) {
+  const query = '?requestNo=' + encodeURIComponent(data.requestNo) + '&reason=' + encodeURIComponent(data.reason || '');
+  return request.post('jk/team/relation-change/' + id + '/cancel' + query, {});
+}
+
+// 申请方主动取消
+export function cancelJkPlatformOrder(id, data) { return request.post('jk/platform-order/' + id + '/cancel', data); }
+export function cancelJkStockTransfer(id, data) { return request.post('jk/stock-transfer/' + id + '/cancel', data); }
+
+// 调拨退回 V1
+export function createJkStockTransferReturn(data) { return request.post('jk/stock-transfer-return/create', data); }
+export function getJkStockTransferReturnList(data) { return request.get('jk/stock-transfer-return/list', data); }
+export function getJkStockTransferReturnDetail(id) { return request.get('jk/stock-transfer-return/' + id); }
+export function cancelJkStockTransferReturn(id, data) { return request.post('jk/stock-transfer-return/' + id + '/cancel', data); }
+export function shipJkStockTransferReturn(id, data) { return request.post('jk/stock-transfer-return/' + id + '/ship', data); }
+export function getJkHandledReturnList(data) { return request.get('jk/stock-transfer-return/handle/list', data); }
+export function getJkHandledReturnDetail(id) { return request.get('jk/stock-transfer-return/handle/' + id); }
+export function auditJkHandledReturn(data) { return request.post('jk/stock-transfer-return/handle/audit', data); }
+export function receiveJkHandledReturn(data) { return request.post('jk/stock-transfer-return/handle/receive', data); }
+export function refundJkHandledReturn(data) { return request.post('jk/stock-transfer-return/handle/refund', data); }
+export function closeJkHandledReturn(data) { return request.post('jk/stock-transfer-return/handle/close', data); }
+
+// 第六阶段个人经营中心
+export function getJkPersonalReport(params) { return request.get('jk/report/summary', params); }

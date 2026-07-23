@@ -85,9 +85,21 @@
 					}
 				},
 				{
+					"path": "identity/select",
+					"style": {
+						"navigationBarTitleText": "选择申请身份", "navigationStyle": "custom"
+					}
+				},
+				{
 					"path": "identity/apply",
 					"style": {
 						"navigationBarTitleText": "身份申请", "navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "identity/success",
+					"style": {
+						"navigationBarTitleText": "申请提交成功", "navigationStyle": "custom"
 					}
 				},
 				{
@@ -95,7 +107,31 @@
 					"style": {
 						"navigationBarTitleText": "申请记录", "navigationStyle": "custom"
 					}
-				},{"path":"trade/create","style":{"navigationBarTitleText":"业务下单"}},{"path":"trade/list","style":{"navigationBarTitleText":"业务单列表"}},{"path":"trade/detail","style":{"navigationBarTitleText":"业务单详情"}},{"path":"stock/index","style":{"navigationBarTitleText":"我的库存","navigationStyle":"custom"}},{"path":"stock/flow","style":{"navigationBarTitleText":"库存流水","navigationStyle":"custom"}},{"path":"commission/index","style":{"navigationBarTitleText":"收益中心","navigationStyle":"custom"}},{"path":"commission/list","style":{"navigationBarTitleText":"佣金明细","navigationStyle":"custom"}},{"path":"commission/detail","style":{"navigationBarTitleText":"佣金详情","navigationStyle":"custom"}},{"path":"fund/account","style":{"navigationBarTitleText":"资金账户","navigationStyle":"custom"}},{"path":"fund/flow","style":{"navigationBarTitleText":"资金流水","navigationStyle":"custom"}},{"path":"withdraw/apply","style":{"navigationBarTitleText":"申请提现","navigationStyle":"custom"}},{"path":"withdraw/list","style":{"navigationBarTitleText":"提现记录","navigationStyle":"custom"}},{"path":"withdraw/detail","style":{"navigationBarTitleText":"提现详情","navigationStyle":"custom"}},{"path": "health/glucose","style":{"navigationBarTitleText": "血糖记录"}},{"path": "health/diet","style":{"navigationBarTitleText": "记录饮食"}},{"path": "health/exercise","style":{"navigationBarTitleText": "记录运动"}},{"path": "health/medicine","style":{"navigationBarTitleText": "选择药品"}}]
+				},
+				{"path":"identity/applyDetail","style":{"navigationBarTitleText":"申请详情","navigationStyle":"custom"}},
+				{"path":"identity/result","style":{"navigationBarTitleText":"审核结果","navigationStyle":"custom"}},
+				{"path":"business/index","style":{"navigationBarTitleText":"业务中台","navigationStyle":"custom"}},
+				{"path":"trade/create","style":{"navigationBarTitleText":"业务下单"}},{"path":"trade/list","style":{"navigationBarTitleText":"业务单列表"}},{"path":"trade/detail","style":{"navigationBarTitleText":"业务单详情"}},{"path":"stock/index","style":{"navigationBarTitleText":"我的库存","navigationStyle":"custom"}},{"path":"stock/flow","style":{"navigationBarTitleText":"库存流水","navigationStyle":"custom"}},{"path":"commission/index","style":{"navigationBarTitleText":"收益中心","navigationStyle":"custom"}},{"path":"commission/list","style":{"navigationBarTitleText":"佣金明细","navigationStyle":"custom"}},{"path":"commission/detail","style":{"navigationBarTitleText":"佣金详情","navigationStyle":"custom"}},{"path":"fund/account","style":{"navigationBarTitleText":"资金账户","navigationStyle":"custom"}},{"path":"fund/flow","style":{"navigationBarTitleText":"资金流水","navigationStyle":"custom"}},{"path":"withdraw/apply","style":{"navigationBarTitleText":"申请提现","navigationStyle":"custom"}},{"path":"withdraw/list","style":{"navigationBarTitleText":"提现记录","navigationStyle":"custom"}},{"path":"withdraw/detail","style":{"navigationBarTitleText":"提现详情","navigationStyle":"custom"}},
+                {"path":"team/index","style":{"navigationBarTitleText":"我的团队"}},
+                {"path":"team/qrcode","style":{"navigationBarTitleText":"推广二维码"}},
+                {"path":"team/changeApply","style":{"navigationBarTitleText":"申请换绑"}},
+                {"path":"team/changeList","style":{"navigationBarTitleText":"换绑记录"}},
+                {"path":"return/create","style":{"navigationBarTitleText":"申请调拨退回"}},
+                {"path":"return/list","style":{"navigationBarTitleText":"调拨退回记录"}},
+                {"path":"return/detail","style":{"navigationBarTitleText":"调拨退回详情"}},
+                {"path": "health/glucose","style":{"navigationBarTitleText": "血糖记录"}},
+                {"path": "health/diet","style":{"navigationBarTitleText": "记录饮食"}},
+                {"path": "health/exercise","style":{"navigationBarTitleText": "记录运动"}},
+                {"path": "health/medicine","style":{"navigationBarTitleText": "记录用药"}},
+                {"path": "health/dataList","style":{"navigationBarTitleText": "健康记录"}},
+                {"path": "health/device","style":{"navigationBarTitleText": "健康设备"}},
+                {"path": "health/authorization","style":{"navigationBarTitleText": "健康授权"}},
+                {"path": "health/authorizedOwners","style":{"navigationBarTitleText": "已授权用户"}},
+                {"path": "health/authorizedData","style":{"navigationBarTitleText": "授权健康数据"}},
+                {"path": "health/profile","style":{"navigationBarTitleText": "健康档案"}},
+                {"path": "health/trend","style":{"navigationBarTitleText": "血糖趋势"}},
+                {"path": "health/alerts","style":{"navigationBarTitleText": "异常提醒"}},
+                {"path": "report/index","style":{"navigationBarTitleText": "个人经营中心"}}]
 		}, {
 			"root": "pages/users",
 			"name": "users",
@@ -976,7 +1012,4 @@
 		}]
 	}
 }
-
-
-
 

@@ -3,54 +3,28 @@
 		<view class="new-users copy-data">
 			<view class="mid" style="flex:1;overflow: hidden;">
 				<scroll-view scroll-y="true">
-					<view class="bg"></view>
-					<view class="head pad30">
-						<view class="user-card">
-							<view class="user-info" @click="goEdit()">
-								<image class="avatar" :src='userInfo.avatar' v-if="userInfo.avatar && uid"></image>
-								<image v-else class="avatar" :src="urlDomain+'crmebimage/perset/staticImg/f.png'" mode=""></image>
-								<view class="info">
-									<view class="name" v-if="!isLogin" @tap="openAuto">
-										请点击登录
-									</view>
-									<view class="name" v-if="userInfo && uid">
-										{{userInfo && userInfo.nickname && uid ? userInfo.nickname : ''}}
-										<view class="vip" v-if="userInfo.vip">
-											<image :src="userInfo.vipIcon" alt=""></image>
-										<view style="margin-left: 10rpx;" class="vip-txt">{{userInfo.vipName|| ''}}
-										</view>
-									</view>
-									</view>
-									<view class="num" v-if="userInfo && userInfo.phone && uid">
-										<view class="num-txt">{{userInfo.phone}}</view>
-										<view class="icon">
-											<image :src="urlDomain+'crmebimage/perset/staticImg/edit.png'" mode=""></image>
-										</view>
-									</view>
-									<view class="phone" v-if="!userInfo.phone && isLogin" @tap.stop="bindPhone">绑定手机号</view>
-									<!-- #ifdef APP-PLUS -->
-									<text class="iconfont icon-shezhi app_set" @click.stop="appUpdate()"></text>
-									<!-- #endif -->
-								</view>
+					<view class="profile-hero">
+						<view class="profile-actions">
+							<text class="iconfont icon-shezhi" @tap.stop="appUpdate"></text>
+							<text class="iconfont icon-kefu" @tap.stop="onClickService"></text>
+						</view>
+						<view class="profile-main" @tap="goEdit">
+							<image class="avatar" :src='userInfo.avatar' v-if="userInfo.avatar && uid"></image>
+							<image v-else class="avatar" :src="urlDomain+'crmebimage/perset/staticImg/f.png'"></image>
+							<view class="profile-info">
+								<view class="profile-name" v-if="!isLogin" @tap.stop="openAuto">请点击登录</view>
+								<view class="profile-name" v-if="userInfo && uid">{{ userInfo.nickname || '' }}<text class="vip-tag" v-if="userInfo.vip">{{ userInfo.vipName || '会员' }}</text></view>
+								<view class="profile-phone" v-if="userInfo && userInfo.phone && uid">手机号：{{ userInfo.phone }}</view>
+								<view class="profile-phone" v-if="!userInfo.phone && isLogin" @tap.stop="bindPhone">绑定手机号</view>
 							</view>
-							<view class="num-wrapper">
-								<view class="num-item" @click="goMenuPage('/pages/users/user_money/index')">
-									<text class="num">{{userInfo.nowMoney && uid ? userInfo.nowMoney:0}}</text>
-									<view class="txt">余额</view>
-								</view>
-								<view class="num-item" @click="goMenuPage('/pages/users/user_integral/index')">
-									<text class="num">{{userInfo.integral && uid ? userInfo.integral: 0}}</text>
-									<view class="txt">积分</view>
-								</view>
-								<view class="num-item" @click="goMenuPage('/pages/users/user_coupon/index')">
-									<text class="num">{{userInfo.couponCount && uid ? userInfo.couponCount : 0}}</text>
-									<view class="txt">优惠券</view>
-								</view>
-								<view class="num-item" @click="goMenuPage('/pages/users/user_goods_collection/index')">
-									<text class="num">{{userInfo.collectCount && uid ? userInfo.collectCount : 0}}</text>
-									<view class="txt">收藏</view>
-								</view>
-							</view>
+							<view class="profile-link">个人主页<text class="iconfont icon-xiangyou"></text></view>
+						</view>
+					</view>
+					<view class="page-section">
+						<view class="business-guide" @tap="jkCanApplyRoles.length && !jkEntryDisabled ? goJkApply() : goJkStatus()">
+							<text class="iconfont icon-qiandai business-guide-icon"></text>
+							<view class="business-guide-content"><view>{{ jkBusinessGuide.title }}</view><text>{{ jkBusinessGuide.description }}</text></view>
+							<text class="iconfont icon-xiangyou"></text>
 						</view>
 						<view class="order-wrapper">
 							<view class="order-hd flex">
@@ -71,7 +45,7 @@
 								</block>
 							</view>
 						</view>
-					</view>
+						</view>
 					<view class="contenBox" id="pageIndex">
 						<!-- 轮播 -->
 						<view class="slider-wrapper" @click.native="bindEdit('userBanner')" v-if="imgUrls != null && imgUrls.length > 0">
@@ -79,7 +53,7 @@
 								:duration="duration" indicator-color="rgba(255,255,255,0.6)" indicator-active-color="#fff">
 								<block v-for="(item,index) in imgUrls" :key="index">
 									<swiper-item class="borRadius14">
-										<image :src="item.pic" class="slide-image" @click="navito(item.url)"></image>
+										<image :src="item.pic" mode="aspectFill" class="slide-image" @click="navito(item.url)"></image>
 									</swiper-item>
 								</block>
 							</swiper>
@@ -120,24 +94,10 @@
 								<!-- #endif -->
 							</view>
 						</view>
-						<view class="jk-identity-card" v-if="isLogin">
-							<view class="identity-head">
-								<view class="identity-title">九州康身份中心</view>
-								<view class="identity-status">{{ jkIdentityStatusText }}</view>
-							</view>
-							<view class="identity-role">当前主身份：{{ jkPrimaryRoleName }}</view>
-							<view class="identity-reason" v-if="jkDisableReason">原因：{{ jkDisableReason }}</view>
-							<view class="identity-tag-list" v-if="jkRoles.length">
-								<text class="identity-tag" v-for="item in jkRoles" :key="item">{{ getJkRoleName(item) }}</text>
-							</view>
-							<view class="identity-action-row">
-								<view class="identity-btn primary" @click="goJkStatus">查看状态</view>
-								<view class="identity-btn" @click="goJkApplyList">申请记录</view>
-								<view class="identity-btn disabled" v-if="jkEntryDisabled">入口已停用</view>
-								<view class="identity-btn primary" v-else @click="goJkApply">{{ jkCanApplyRoles.length ? '申请新身份' : '身份入口' }}</view>
-							</view>
-							<view class="jk-business-links" v-if="jkBusinessLinks.length"><view v-for="item in jkBusinessLinks" :key="item.url" :class="['identity-btn', item.disabled ? 'disabled' : '']" @click="goJkBusiness(item)">{{ item.name }}</view></view>
-<view class="identity-tip">业务入口按当前身份和权限展示。</view>
+						<view class="jk-business-entry" v-if="isLogin" @tap="goJkStatus">
+							<view class="business-entry-icon"><text class="iconfont icon-qiandai"></text></view>
+							<view class="entry-content"><view class="entry-title">九州康业务中心</view><text class="entry-desc">当前身份：{{ jkPrimaryRoleName }}，{{ jkBusinessGuide.description }}</text></view>
+							<view class="entry-side"><text class="entry-status">{{ jkIdentityStatusText }}</text><view class="entry-action" @tap.stop="jkCanApplyRoles.length && !jkEntryDisabled ? goJkApply() : goJkStatus()">{{ jkBusinessGuide.actionText }}<text class="iconfont icon-xiangyou"></text></view></view>
 						</view>
 						<image :src="copyImage" alt="" class='support'></image>
 					</view>
@@ -210,10 +170,25 @@
 				addLink('我的库存', '/pages/jk/stock/index', 'stock.view.self', ['maker', 'partner', 'county_agent']);
 				addLink('库存流水', '/pages/jk/stock/flow', 'stock.flow.view', ['maker', 'partner', 'county_agent']);
 				addLink('收益中心', '/pages/jk/commission/index', 'commission.view.self', ['maker', 'partner', 'county_agent']);
+				addLink('个人经营中心', '/pages/jk/report/index', 'report.view', ['maker', 'partner', 'county_agent']);
 				addLink('资金账户', '/pages/jk/fund/account', 'fund.account.view', ['maker', 'partner', 'county_agent']);
 				addLink('提现申请', '/pages/jk/withdraw/apply', 'withdraw.apply', ['maker', 'partner', 'county_agent']);
 				addLink('提现记录', '/pages/jk/withdraw/list', 'withdraw.view.self', ['maker', 'partner', 'county_agent']);
+				addLink('我的团队', '/pages/jk/team/index', 'team.view.direct', ['maker', 'partner', 'county_agent']);
+				addLink('推广二维码', '/pages/jk/team/qrcode', 'team.view.direct', ['maker', 'partner', 'county_agent']);
+				addLink('换绑申请', '/pages/jk/team/changeApply', 'agent.relation.change.apply', ['maker', 'partner']);
+				addLink('调拨退回', '/pages/jk/return/list?mode=own', 'stock.transfer.return.apply', ['maker', 'partner']);
+				addLink('下级退回处理', '/pages/jk/return/list?mode=handle', 'stock.transfer.return.audit', ['county_agent']);
 				return links;
+			},
+			jkBusinessGuide() {
+				if (this.jkEntryDisabled) {
+					return { title: '业务身份已冻结', description: this.jkDisableReason || '请查看冻结原因', actionText: '查看原因' };
+				}
+				if (this.jkCanApplyRoles.length) {
+					return { title: '加入九州康业务体系，享受更多权益', description: '成为业务伙伴，享受库存、收益等专属服务', actionText: '去申请' };
+				}
+				return { title: this.jkIdentityStatusText, description: `当前主身份：${this.jkPrimaryRoleName}`, actionText: '查看状态' };
 			}
 		},
 		data() {
@@ -362,7 +337,7 @@
 				}
 				if (this.jkCanApplyRoles.length) {
 					uni.navigateTo({
-						url: '/pages/jk/identity/apply'
+						url: '/pages/jk/identity/select'
 					});
 					return;
 				}
@@ -990,6 +965,45 @@
 		font-size: 28rpx;
 		text-align: center;
 	}
+
+	/* My page fusion layout. The dynamic "我的服务" section above remains untouched. */
+	.profile-hero { position: relative; padding: 54rpx 32rpx 46rpx; background: linear-gradient(145deg, #bdf5eb 0%, #e8fbf7 54%, #fff 100%); overflow: hidden; }
+	.profile-hero::after { content: ''; position: absolute; right: -76rpx; top: 68rpx; width: 260rpx; height: 260rpx; border-radius: 50%; background: rgba(255,255,255,.42); }
+	.profile-actions { position: relative; z-index: 1; display: flex; justify-content: flex-end; min-height: 52rpx; padding-right: 132rpx; gap: 28rpx; font-size: 48rpx; color: #182825; }
+	.profile-main { position: relative; z-index: 1; display: flex; align-items: center; margin-top: 42rpx; }
+	.profile-main .avatar { width: 122rpx; height: 122rpx; flex: 0 0 122rpx; border: 6rpx solid rgba(255,255,255,.86); border-radius: 50%; background: #fff; }
+	.profile-info { min-width: 0; flex: 1; margin-left: 26rpx; }
+	.profile-name { display: flex; align-items: center; color: #17221f; font-size: 42rpx; font-weight: 700; line-height: 1.35; }
+	.vip-tag { margin-left: 16rpx; padding: 5rpx 14rpx; border-radius: 10rpx; background: #18b997; color: #fff; font-size: 22rpx; font-weight: 500; }
+	.profile-phone { margin-top: 10rpx; color: #67716f; font-size: 26rpx; }
+	.profile-link { display: flex; align-items: center; color: #5d6663; font-size: 25rpx; white-space: nowrap; }
+	.profile-link .iconfont { margin-left: 8rpx; font-size: 22rpx; }
+	.page-section { padding: 0 32rpx; margin-top: 18rpx; }
+	.business-guide { display: flex; align-items: center; min-height: 166rpx; padding: 24rpx 26rpx; border-radius: 24rpx; background: linear-gradient(90deg,#effcf8,#f8fffd); color: #0eb08d; }
+	.business-guide-icon { display: flex; align-items: center; justify-content: center; width: 64rpx; height: 64rpx; margin-right: 18rpx; border-radius: 20rpx; background: #d6f8ef; font-size: 36rpx; }
+	.business-guide-content { min-width: 0; flex: 1; font-size: 29rpx; font-weight: 600; }
+	.business-guide-content text { display: block; margin-top: 8rpx; color: #7b8583; font-size: 23rpx; font-weight: 400; }
+	.business-guide > .iconfont:last-child { font-size: 26rpx; }
+	.page-section .order-wrapper { margin-top: 38rpx; padding: 0; border-radius: 0; background: transparent; }
+	.page-section .order-wrapper .order-hd { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 34rpx; padding: 0 6rpx; }
+	.page-section .order-wrapper .order-hd .left { font-size: 38rpx; font-weight: 700; }
+	.page-section .order-wrapper .order-hd .right { display: flex; align-items: center; margin-left: auto; font-size: 27rpx; white-space: nowrap; }
+	.page-section .order-wrapper .order-bd { display: flex; align-items: flex-start; justify-content: space-around; }
+	.page-section .order-wrapper .order-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 20%; }
+	.page-section .order-wrapper .order-item .pic_status { color: #19bd9c; font-size: 52rpx; }
+	.page-section .order-wrapper .order-item .txt { margin-top: 15rpx; font-size: 25rpx; white-space: nowrap; }
+	.contenBox { padding: 22rpx 32rpx 118rpx; }
+	.new-users .slider-wrapper { height: 202rpx; margin: 16rpx 0 30rpx; overflow: hidden; border-radius: 24rpx; background: #edf9f6; }
+	.new-users .slider-wrapper swiper, .new-users .slider-wrapper swiper-item, .new-users .slider-wrapper image { height: 202rpx; border-radius: 24rpx; }
+	.jk-business-entry { display: flex; align-items: center; min-height: 190rpx; box-sizing: border-box; margin: 30rpx 0 8rpx; padding: 24rpx 28rpx; border: 1rpx solid #edf0ef; border-radius: 24rpx; background: #fff; box-shadow: 0 8rpx 22rpx rgba(20, 101, 84, .04); }
+	.business-entry-icon { display: flex; align-items: center; justify-content: center; width: 100rpx; height: 100rpx; flex: 0 0 100rpx; border-radius: 50%; background: #e5faf4; color: #14b694; font-size: 52rpx; }
+	.entry-content { min-width: 0; flex: 1; margin-left: 24rpx; }
+	.entry-title { color: #222d2a; font-size: 34rpx; font-weight: 700; }
+	.entry-desc { display: block; margin-top: 14rpx; overflow: hidden; color: #7a8481; font-size: 23rpx; text-overflow: ellipsis; white-space: nowrap; }
+	.entry-side { display: flex; flex-direction: column; align-items: flex-end; margin-left: 12rpx; }
+	.entry-status { margin-bottom: 14rpx; padding: 7rpx 14rpx; border-radius: 18rpx; background: #fff3ed; color: #f36a42; font-size: 21rpx; white-space: nowrap; }
+	.entry-action { display: flex; align-items: center; padding: 12rpx 18rpx; border-radius: 28rpx; background: #e8faf5; color: #14ad8d; font-size: 25rpx; white-space: nowrap; }
+	.entry-action .iconfont { margin-left: 8rpx; font-size: 20rpx; }
 
 /* ui1.1 visual override */
 .user { min-height: 100vh; background: #f7f8fa; }
