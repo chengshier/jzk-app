@@ -22,8 +22,72 @@
   </view>
 </template>
 <script>
-import {getJkMyStock,getJkPermissionContext} from '@/api/jk.js';import JkPageNav from '@/components/jk/jk-page-nav.vue';import JkIcon from '@/components/jk/jk-icon.vue';import JkEmpty from '@/components/jk/jk-empty.vue';
-export default{components:{JkPageNav,JkIcon,JkEmpty},data(){return{stock:{items:[]},context:{},keyword:'',activeFilter:'all',loaded:false,filters:[{label:'全部',value:'all'},{label:'库存充足',value:'enough'},{label:'库存预警',value:'low'},{label:'临期商品',value:'near'}]}},computed:{items(){return this.stock.items||this.stock.records||[]},roleName(){return this.context.primaryRoleName||''},skuCount(){return this.stock.skuCount||this.items.length},productCount(){return this.stock.productCount||new Set(this.items.map(x=>x.productId)).size},totalValue(){const v=this.stock.totalValue||this.stock.stockValue||this.items.reduce((s,x)=>s+Number(x.referencePrice||x.price||0)*this.available(x),0);return this.money(v)},filteredItems(){const k=this.keyword.trim().toLowerCase();return this.items.filter(item=>{const text=[item.productName,item.skuCode,item.skuText,item.skuName,item.barCode].join(' ').toLowerCase();if(k&&!text.includes(k))return false;const q=this.available(item);if(this.activeFilter==='enough')return q>20;if(this.activeFilter==='low')return q>=0&&q<=20;if(this.activeFilter==='near')return item.nearExpiry||item.expireWarning;return true})},stockRows(){return this.filteredItems.map((item,index)=>{const available=this.available(item);return{key:item.id||(item.productId+'-'+item.skuId),raw:item,image:this.productImage(item,index),name:item.productName||'商品已删除',skuText:'SKU：'+(item.skuCode||item.skuText||item.skuName||'-'),empty:available===0,availableText:available+(item.unitName||''),priceText:'¥'+this.money(item.referencePrice||item.price)}})}},onShow(){this.load()},methods:{load(){getJkMyStock().then(r=>this.stock=r.data||r||{items:[]}).catch(()=>this.stock={items:[]}).finally(()=>this.loaded=true);getJkPermissionContext().then(r=>this.context=r.data||r||{}).catch(()=>{})},available(item){return Number(item.availableQuantity!==undefined?item.availableQuantity:(item.availableQty!==undefined?item.availableQty:(item.stockQuantity||0)))},money(v){const n=Number(v||0);return Number.isNaN(n)?String(v||'0.00'):n.toFixed(2)},productImage(item,index){return item.productImage||item.image||['/static/jk-ui-v2/products/glucose-paper.png','/static/jk-ui-v2/products/needle.png','/static/jk-ui-v2/products/wipes.png','/static/jk-ui-v2/products/meter.png'][index%4]},goFlow(){uni.navigateTo({url:'/pages/jk/stock/flow'})},openDetail(item){uni.navigateTo({url:'/pages/jk/stock/detail?item='+encodeURIComponent(JSON.stringify(item))})},showFilter(){uni.showToast({title:'可结合接口增加品牌、库存区间筛选',icon:'none'})}}};
+import { getJkMyStock, getJkPermissionContext } from '@/api/jk.js';
+import JkPageNav from '@/components/jk/jk-page-nav.vue';
+import JkIcon from '@/components/jk/jk-icon.vue';
+import JkEmpty from '@/components/jk/jk-empty.vue';
+export default {
+  components: { JkPageNav, JkIcon, JkEmpty },
+  data() {
+    return {
+      stock: { items: [] }, context: {}, keyword: '', activeFilter: 'all', loaded: false,
+      filters: [{ label: '全部', value: 'all' }, { label: '库存充足', value: 'enough' }, { label: '库存预警', value: 'low' }, { label: '临期商品', value: 'near' }]
+    };
+  },
+  computed: {
+    items() { return this.stock.items || this.stock.records || []; },
+    roleName() { return this.context.primaryRoleName || ''; },
+    skuCount() { return this.stock.skuCount || this.items.length; },
+    productCount() { return this.stock.productCount || new Set(this.items.map((item) => item.productId)).size; },
+    totalValue() {
+      const value = this.stock.totalValue || this.stock.stockValue || this.items.reduce((sum, item) => sum + Number(item.referencePrice || item.price || 0) * this.available(item), 0);
+      return this.money(value);
+    },
+    filteredItems() {
+      const keyword = this.keyword.trim().toLowerCase();
+      return this.items.filter((item) => {
+        const text = [item.productName, item.skuCode, item.skuText, item.skuName, item.barCode].join(' ').toLowerCase();
+        if (keyword && !text.includes(keyword)) return false;
+        const quantity = this.available(item);
+        if (this.activeFilter === 'enough') return quantity > 20;
+        if (this.activeFilter === 'low') return quantity >= 0 && quantity <= 20;
+        if (this.activeFilter === 'near') return item.nearExpiry || item.expireWarning;
+        return true;
+      });
+    },
+    stockRows() {
+      return this.filteredItems.map((item, index) => {
+        const available = this.available(item);
+        return {
+          key: item.id || (item.productId + '-' + item.skuId), raw: item,
+          image: this.productImage(item, index), name: item.productName || '商品已删除',
+          skuText: 'SKU：' + (item.skuCode || item.skuText || item.skuName || '-'), empty: available === 0,
+          availableText: available + (item.unitName || ''), priceText: '¥' + this.money(item.referencePrice || item.price)
+        };
+      });
+    }
+  },
+  onShow() { this.load(); },
+  methods: {
+    load() {
+      getJkMyStock().then((response) => { this.stock = response.data || response || { items: [] }; }).catch(() => { this.stock = { items: [] }; }).finally(() => { this.loaded = true; });
+      getJkPermissionContext().then((response) => { this.context = response.data || response || {}; }).catch(() => {});
+    },
+    available(item) { return Number(item.availableQuantity !== undefined ? item.availableQuantity : (item.availableQty !== undefined ? item.availableQty : (item.stockQuantity || 0))); },
+    money(value) { const number = Number(value || 0); return Number.isNaN(number) ? String(value || '0.00') : number.toFixed(2); },
+    productImage(item, index) { return item.productImage || item.image || ['/static/jk-ui-v2/products/glucose-paper.png', '/static/jk-ui-v2/products/needle.png', '/static/jk-ui-v2/products/wipes.png', '/static/jk-ui-v2/products/meter.png'][index % 4]; },
+    goFlow() { uni.navigateTo({ url: '/pages/jk/stock/flow' }); },
+    openDetail(item) {
+      if (!item.skuId) {
+        uni.showToast({ title: '该库存记录缺少SKU标识', icon: 'none' });
+        return;
+      }
+      const productQuery = item.productId ? ('&productId=' + item.productId) : '';
+      uni.navigateTo({ url: '/pages/jk/stock/detail?skuId=' + item.skuId + productQuery });
+    },
+    showFilter() { uni.showToast({ title: '临期筛选依赖真实批次有效期数据', icon: 'none' }); }
+  }
+};
 </script>
 <style scoped>
 .stock-page{min-height:100vh;background:#f7f9f9}.stock-content{padding:14rpx 22rpx 38rpx}.identity-chip{display:flex;align-items:center;max-width:340rpx;margin:0 auto 18rpx;padding:6rpx 14rpx;border:1rpx solid #d6ede7;border-radius:24rpx;background:#f1fbf8;color:#11a884;font-size:21rpx}.identity-chip text{margin:0 6rpx}.summary-card{display:flex;padding:24rpx 10rpx;border:1rpx solid #cceee5;border-radius:20rpx;background:linear-gradient(135deg,#f2fcf9,#fff)}.summary-card>view{display:flex;flex:1;flex-direction:column;align-items:center;border-right:1rpx solid #dcece8}.summary-card>view:last-child{border-right:0}.summary-card text{color:#7c888e;font-size:20rpx}.summary-card strong{margin:10rpx 0;color:#1e2930;font-size:29rpx}.search-row{display:flex;align-items:center;height:68rpx;margin-top:20rpx;border:1rpx solid #e4e9e8;border-radius:34rpx;background:#fff}.search-row>image{width:34rpx;height:34rpx;margin-left:16rpx}.search-row input{flex:1;height:68rpx;padding:0 10rpx;font-size:22rpx}.search-row>view{display:flex;align-items:center;padding:0 15rpx;border-left:1rpx solid #e7eceb;color:#6e7a80;font-size:21rpx}.search-row>view image{width:31rpx;height:31rpx;margin-left:4rpx}.tabs{display:flex;margin-top:18rpx;border-bottom:1rpx solid #edf1f0}.tabs text{position:relative;flex:1;padding:16rpx 0;color:#707c82;text-align:center;font-size:22rpx}.tabs text.active{color:#10b981;font-weight:700}.tabs text.active::after{position:absolute;right:32%;bottom:0;left:32%;height:4rpx;background:#10b981;content:''}.stock-row{display:flex;align-items:center;min-height:154rpx;margin-top:16rpx;padding:18rpx;border-radius:18rpx;background:#fff;box-shadow:0 6rpx 18rpx rgba(23,71,59,.04)}.product-image{width:116rpx;height:116rpx;flex-shrink:0;border-radius:14rpx;background:#f4f8f7}.product-main{min-width:0;flex:1;margin-left:16rpx}.product-name{display:block;overflow:hidden;color:#202b31;font-size:27rpx;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.sku{display:block;margin-top:7rpx;color:#819097;font-size:20rpx}.stock-meta{display:flex;gap:40rpx;margin-top:12rpx}.stock-meta>view{display:flex;flex-direction:column;gap:5rpx}.stock-meta text{color:#8a959b;font-size:19rpx}.stock-meta strong{color:#10b981;font-size:25rpx}.stock-meta strong.price{color:#202b31}.stock-meta strong.danger{color:#ef4444}.arrow{color:#9da7ac;font-size:34rpx}.flow-btn{display:flex;align-items:center;justify-content:center;height:76rpx;margin-top:18rpx;border:2rpx solid #b8eade;border-radius:16rpx;background:#fff;color:#10a981;font-size:24rpx;line-height:76rpx}.flow-btn::after{border:0}.flow-btn text{margin-left:8rpx}
