@@ -39,4 +39,14 @@ assert(
   'identity/status methods block still has compressed inline declarations'
 );
 
+const stockDetail = read('pages/jk/stock/detail.vue');
+assert(
+  !stockDetail.includes('距效期 &lt;') && !stockDetail.includes('距效期 <'),
+  'stock/detail should avoid literal less-than text because it generates invalid wxml'
+);
+assert(
+  !stockDetail.includes('<text>库存趋势 <small>'),
+  'stock/detail should not nest small inside text in the section title'
+);
+
 console.log('template compile guards passed');

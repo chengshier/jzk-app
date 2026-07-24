@@ -1,81 +1,69 @@
 <template>
   <view class="identity-apply">
-    <jk-page-nav title="身份申请填写"></jk-page-nav>
-    <view class="steps">
-      <view class="step active"><text>1</text><view>填写信息</view></view>
-      <view class="step-line"></view>
-      <view class="step"><text>2</text><view>提交审核</view></view>
-      <view class="step-line"></view>
-      <view class="step"><text>3</text><view>审核结果</view></view>
-    </view>
+    <jk-page-nav title="身份申请填写" />
+    <view class="apply-content">
+      <view class="steps">
+        <view class="step active"><text>1</text><view>填写信息</view></view>
+        <view class="step-line"></view>
+        <view class="step"><text>2</text><view>提交审核</view></view>
+        <view class="step-line"></view>
+        <view class="step"><text>3</text><view>审核结果</view></view>
+      </view>
 
-    <view class="section-title">基本信息</view>
-    <view class="form-card">
-      <view class="field">
-        <text class="field-label">申请身份</text>
-        <picker :range="roleLabels" :value="roleIndex" @change="onRoleChange">
-          <view class="field-value picker-value">{{ currentRoleLabel }}</view>
+      <view class="section-title">基本信息</view>
+      <view class="form-card">
+        <picker mode="selector" :range="roleLabels" :value="roleIndex" @change="onRoleChange">
+          <view class="field"><text class="field-label">申请身份</text><text class="field-value">{{ currentRoleLabel }}</text><text class="field-arrow">›</text></view>
         </picker>
-      </view>
-      <view class="field">
-        <text class="field-label">真实姓名</text>
-        <input v-model.trim="form.realName" class="field-input" maxlength="30" placeholder="请输入真实姓名" />
-      </view>
-      <view class="field">
-        <text class="field-label">手机号码</text>
-        <input v-model.trim="form.mobile" class="field-input" type="number" maxlength="11" placeholder="请输入手机号码" />
-      </view>
-      <view class="field">
-        <text class="field-label">所属区域</text>
+        <view class="field"><text class="field-label">真实姓名</text><input v-model.trim="form.realName" class="field-input" placeholder="请输入真实姓名" maxlength="30" /></view>
+        <view class="field"><text class="field-label">手机号码</text><input v-model.trim="form.mobile" class="field-input" type="number" placeholder="请输入手机号码" maxlength="11" /></view>
         <picker mode="multiSelector" :range="regionPickerLabels" :value="regionPickerIndexes" @columnchange="onRegionColumnChange" @change="onRegionChange">
-          <view class="field-value picker-value">{{ currentRegionLabel }}</view>
+          <view class="field"><text class="field-label">所属区域</text><text :class="['field-value',{placeholder:!form.regionName}]">{{ currentRegionLabel }}</text><text class="field-arrow">›</text></view>
         </picker>
       </view>
-    </view>
 
-    <view class="section-title">补充信息 <text>（选填）</text></view>
-    <view class="form-card">
-      <view class="field recommender-field">
-        <text class="field-label">推荐人</text>
-        <input v-model.trim="form.recommender" class="field-input" maxlength="50" placeholder="请输入推荐人姓名或手机号" />
+      <view class="section-title section-title--space">补充信息 <text>（选填）</text></view>
+      <view class="form-card">
+        <view class="field"><text class="field-label">推荐人</text><input v-model.trim="form.recommender" class="field-input" placeholder="请输入推荐人姓名或手机号" maxlength="50" /></view>
+        <view class="textarea-wrap">
+          <view class="textarea-label">申请说明 <text>（选填）</text></view>
+          <textarea v-model="form.applyReason" class="reason-input" maxlength="200" placeholder="请简要说明申请该身份的原因及用途" />
+          <text class="reason-count">{{ form.applyReason.length }}/200</text>
+        </view>
       </view>
-      <view class="reason-label">申请说明 <text>（选填）</text></view>
-      <textarea v-model="form.applyReason" class="reason-input" maxlength="200" placeholder="请简要说明申请该身份的原因及用途"></textarea>
-      <view class="reason-count">{{ form.applyReason.length }}/200</view>
-    </view>
 
-    <view class="section-title">上传资料</view>
-    <view class="upload-hint">请上传身份证或与申请身份相关的证明材料</view>
-    <view class="upload-card">
-      <view v-for="(url, index) in certificateUrls" :key="url" class="uploaded-file">
-        <image :src="url" mode="aspectFill" @click="previewCertificate(index)"></image>
-        <text class="remove-file" @click="removeCertificate(index)">×</text>
+      <view class="section-title section-title--space">上传资料</view>
+      <view class="upload-hint">请根据所选身份类型上传相关资料</view>
+      <view class="upload-tabs">
+        <text class="active">身份证</text><text>资质证明</text><text>其他证明材料</text>
       </view>
-      <view v-if="certificateUrls.length < 6" class="upload-action" @click="addCertificate">
-        <text class="upload-plus">+</text>
-        <text>{{ uploading ? '上传中...' : '点击上传证明材料' }}</text>
-        <text class="upload-tip">支持 jpg/png，单张不超过10MB</text>
+      <view class="upload-card">
+        <view v-for="(url,index) in certificateUrls" :key="url" class="uploaded-file">
+          <image :src="url" mode="aspectFill" @tap="previewCertificate(index)" />
+          <text class="remove-file" @tap.stop="removeCertificate(index)">×</text>
+        </view>
+        <view v-if="certificateUrls.length < 3" class="upload-action" @tap="addCertificate">
+          <image src="/static/jk-ui-v2/icons/document.png" mode="aspectFit" />
+          <text>{{ uploading ? '上传中...' : '点击上传身份证正反面' }}</text>
+          <text class="upload-tip">支持 jpg/png，单张不超过10MB</text>
+        </view>
       </view>
     </view>
-
-    <view class="submit-wrap">
-      <button class="submit-btn" :disabled="submitting || uploading || !roleOptions.length" @click="submitApply">
-        {{ submitting ? '提交中...' : '提交申请' }}
-      </button>
-    </view>
+    <jk-bottom-action><button class="submit-btn" :disabled="submitting || uploading" @tap="submitApply">{{ submitting ? '提交中...' : '提交申请' }}</button></jk-bottom-action>
   </view>
 </template>
 
 <script>
 import { getJkIdentityRegionOptions, getJkPermissionContext, submitJkIdentityApply } from '@/api/jk.js';
 import JkPageNav from '@/components/jk/jk-page-nav.vue';
+import JkBottomAction from '@/components/jk/jk-bottom-action.vue';
 
 const ROLE_NAME_MAP = {
   maker: '创客', partner: '合伙人', county_agent: '区县代', health_advisor: '健康顾问', city_agent: '市代', province_agent: '省代'
 };
 
 export default {
-  components: { JkPageNav },
+  components: { JkPageNav, JkBottomAction },
   data() {
     return {
       roleOptions: [], roleIndex: 0, regionOptions: [], regionPickerColumns: [[], [], []], regionPickerIndexes: [0, 0, 0],
@@ -206,14 +194,8 @@ export default {
 };
 </script>
 
-<style lang="scss">
-.identity-apply { min-height: 100vh; padding: 0 32rpx 148rpx; background: #fff; box-sizing: border-box; }
-.steps { display: flex; align-items: flex-start; padding: 30rpx 20rpx 38rpx; }
-.step { width: 128rpx; color: #9aa0ad; text-align: center; font-size: 25rpx; }
-.step text { display: block; width: 54rpx; height: 54rpx; margin: 0 auto 16rpx; border-radius: 50%; background: #afb4c0; color: #fff; line-height: 54rpx; font-size: 30rpx; }
-.step.active { color: #08b996; font-weight: 600; }.step.active text { background: #08b996; }.step-line { flex: 1; height: 1rpx; margin-top: 27rpx; background: #d8dce3; }
-.section-title { margin: 18rpx 0 16rpx; padding-left: 18rpx; border-left: 7rpx solid #08b996; color: #202633; font-size: 34rpx; font-weight: 700; }.section-title text, .reason-label text { color: #9aa0ad; font-size: 25rpx; font-weight: 400; }
-.form-card { overflow: hidden; border-radius: 16rpx; background: #fff; }.field { display: flex; align-items: center; min-height: 102rpx; border-bottom: 1rpx solid #edf0f3; }.field-label { width: 170rpx; color: #303743; font-size: 29rpx; }.field-input, .field-value { flex: 1; color: #303743; font-size: 29rpx; }.field-input { height: 86rpx; }.field-value { padding: 28rpx 40rpx 28rpx 0; }.picker-value { position: relative; }.picker-value:after { position: absolute; right: 0; content: '›'; color: #7e8795; font-size: 42rpx; line-height: 29rpx; }.reason-label { padding: 26rpx 0 18rpx; color: #303743; font-size: 29rpx; }.reason-input { width: 100%; height: 200rpx; padding: 22rpx; border: 1rpx solid #e7eaee; border-radius: 14rpx; background: #fafbfc; color: #303743; font-size: 27rpx; box-sizing: border-box; }.reason-count { margin-top: -38rpx; padding-right: 18rpx; color: #9aa0ad; text-align: right; font-size: 24rpx; }
-.upload-hint { margin-bottom: 18rpx; color: #7d8592; font-size: 25rpx; }.upload-card { display: flex; flex-wrap: wrap; gap: 16rpx; min-height: 188rpx; padding: 22rpx; border: 2rpx dashed #dce3e8; border-radius: 16rpx; box-sizing: border-box; }.upload-action { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; min-width: 280rpx; color: #47515d; font-size: 27rpx; }.upload-plus { margin-bottom: 10rpx; color: #08b996; font-size: 64rpx; line-height: 58rpx; }.upload-tip { margin-top: 10rpx; color: #9aa0ad; font-size: 22rpx; }.uploaded-file { position: relative; width: 140rpx; height: 140rpx; }.uploaded-file image { width: 140rpx; height: 140rpx; border-radius: 10rpx; }.remove-file { position: absolute; top: -12rpx; right: -12rpx; width: 34rpx; height: 34rpx; border-radius: 50%; background: #ff5c5c; color: #fff; line-height: 31rpx; text-align: center; font-size: 30rpx; }
-.submit-wrap { position: fixed; right: 0; bottom: 0; left: 0; z-index: 10; padding: 22rpx 32rpx calc(22rpx + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96); }.submit-btn { height: 92rpx; border-radius: 46rpx; background: #08b996; color: #fff; line-height: 92rpx; font-size: 34rpx; font-weight: 700; }.submit-btn[disabled] { opacity: .58; }
+<style scoped>
+.identity-apply{min-height:100vh;padding-bottom:132rpx;background:#fff}.apply-content{padding:0 28rpx 36rpx}.steps{display:flex;align-items:flex-start;padding:28rpx 18rpx 34rpx}.step{width:122rpx;color:#9aa2a8;text-align:center;font-size:22rpx}.step text{display:flex;align-items:center;justify-content:center;width:44rpx;height:44rpx;margin:0 auto 12rpx;border-radius:50%;background:#9fa7ad;color:#fff;font-size:23rpx}.step.active{color:#10b981;font-weight:600}.step.active text{background:#10b981}.step-line{flex:1;height:2rpx;margin-top:22rpx;background:#dce3e2}
+.section-title{margin:10rpx 0 12rpx;padding-left:14rpx;border-left:6rpx solid #10b981;color:#1f2937;font-size:30rpx;font-weight:700}.section-title text{color:#9aa3a9;font-size:22rpx;font-weight:400}.section-title--space{margin-top:34rpx}.form-card{border-radius:18rpx;background:#fff}.field{display:flex;align-items:center;min-height:92rpx;border-bottom:1rpx solid #ecefef}.field-label{width:160rpx;color:#303a40;font-size:27rpx}.field-input,.field-value{min-width:0;flex:1;color:#2a343a;font-size:27rpx}.field-input{height:82rpx}.field-value{text-align:right}.field-value.placeholder{color:#a7afb3}.field-arrow{margin-left:10rpx;color:#899399;font-size:38rpx}.textarea-wrap{position:relative;padding:24rpx 0}.textarea-label{margin-bottom:16rpx;color:#303a40;font-size:27rpx}.textarea-label text{color:#9ca5aa;font-size:22rpx}.reason-input{width:100%;height:180rpx;padding:18rpx;border:1rpx solid #e6ebea;border-radius:14rpx;background:#f9fbfa;color:#303a40;font-size:25rpx;box-sizing:border-box}.reason-count{position:absolute;right:14rpx;bottom:34rpx;color:#a1a9ad;font-size:20rpx}
+.upload-hint{margin-bottom:14rpx;color:#7d898f;font-size:22rpx}.upload-tabs{display:flex;margin-bottom:14rpx;border-radius:12rpx;background:#f5f7f7}.upload-tabs text{flex:1;padding:16rpx 8rpx;color:#77838a;text-align:center;font-size:22rpx}.upload-tabs .active{border-bottom:3rpx solid #10b981;color:#10a981}.upload-card{display:flex;flex-wrap:wrap;gap:14rpx;min-height:190rpx;padding:18rpx;border:2rpx dashed #dfe6e4;border-radius:16rpx;box-sizing:border-box}.upload-action{display:flex;min-width:260rpx;flex:1;flex-direction:column;align-items:center;justify-content:center;color:#4f5b61;font-size:24rpx}.upload-action image{width:70rpx;height:70rpx;margin-bottom:10rpx}.upload-tip{margin-top:8rpx;color:#9ca5aa;font-size:20rpx}.uploaded-file{position:relative;width:145rpx;height:145rpx}.uploaded-file image{width:145rpx;height:145rpx;border-radius:10rpx}.remove-file{position:absolute;top:-10rpx;right:-10rpx;display:flex;align-items:center;justify-content:center;width:34rpx;height:34rpx;border-radius:50%;background:#ef4444;color:#fff;font-size:26rpx}.submit-btn{border:0!important;background:linear-gradient(90deg,#12b98f,#08ad82)!important;color:#fff!important}.submit-btn[disabled]{opacity:.58}
 </style>

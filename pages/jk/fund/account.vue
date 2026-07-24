@@ -1,75 +1,11 @@
 <template>
-  <view class="page">
-    <jk-page-nav title="资金账户" />
-
-    <view class="hero">
-      <text class="hero-label">可提现金额</text>
-      <text class="hero-amount">¥ {{ formatAmount(account.availableAmount) }}</text>
-      <text class="hero-meta">{{ account.roleName || '身份未配置' }}<text v-if="account.regionName"> / {{ account.regionName }}</text></text>
-      <text v-if="account.applicantName || account.userNickname || account.applicantPhone" class="hero-user">
-        {{ account.applicantName || '用户不存在' }}
-        <text v-if="account.userNickname"> / {{ account.userNickname }}</text>
-        <text v-if="account.applicantPhone"> / {{ account.applicantPhone }}</text>
-      </text>
-      <text v-if="account.statusText" class="hero-status">状态：{{ account.statusText }}</text>
-    </view>
-
-    <view v-for="item in cards" :key="item.key" class="card">
-      <text class="card-label">{{ item.label }}</text>
-      <text class="card-amount">¥ {{ formatAmount(account[item.key]) }}</text>
-    </view>
-
-    <view class="entry" @click="goFlow">
-      <text>查看资金流水</text>
-      <text>›</text>
-    </view>
-  </view>
+  <view class="fund-page"><jk-page-nav title="资金账户"/><view class="fund-content"><view class="balance-card"><view><text>可提现金额（元）</text><strong>¥{{money(account.availableAmount)}}</strong></view><button @tap="go('/pages/jk/withdraw/apply')">提现</button><view class="balance-meta"><view><text>账户总金额（元）</text><strong>¥{{money(totalAmount)}}</strong></view><view><text>冻结金额（元）</text><strong>¥{{money(account.frozenAmount)}}</strong></view></view><image src="/static/jk-ui-v2/illustrations/finance-hero.png" mode="aspectFit"/></view><view class="account-actions"><view @tap="showBank"><jk-icon name="wallet" size="lg"/><view><text>银行卡管理</text><small>管理已绑定银行卡</small></view><text>›</text></view><view @tap="go('/pages/jk/withdraw/list')"><jk-icon name="document" size="lg"/><view><text>提现记录</text><small>查看提现明细记录</small></view><text>›</text></view></view><view class="flow-card"><view class="section-head"><text>资金流水</text><view><text :class="{active:flowFilter===''}" @tap="flowFilter=''">全部</text><text :class="{active:flowFilter==='income'}" @tap="flowFilter='income'">收入</text><text :class="{active:flowFilter==='expense'}" @tap="flowFilter='expense'">支出</text><text @tap="go('/pages/jk/fund/flow')">筛选⌄</text></view></view><view v-for="item in flowRows" :key="item.key" class="flow-row"><jk-icon :name="item.icon" size="md"/><view class="flow-main"><text>{{item.title}}</text><small>{{item.timeText}}</small></view><view class="flow-right"><strong :class="{negative:item.negative}">{{item.amountText}}</strong><small>{{item.balanceText}}</small></view></view><jk-empty v-if="loaded&&!filteredFlows.length" text="暂无资金流水"/><view v-if="filteredFlows.length" class="no-more">没有更多了</view></view></view></view>
 </template>
-
 <script>
-import JkPageNav from '@/components/jk/jk-page-nav.vue';
-import { getJkFundAccount } from '@/api/jk.js';
-
-export default {
-  components: { JkPageNav },
-  data() {
-    return {
-      account: {},
-      cards: [
-        { key: 'withdrawingAmount', label: '提现中' },
-        { key: 'withdrawnAmount', label: '已提现' },
-        { key: 'frozenAmount', label: '冻结资金' },
-        { key: 'rejectedReturnAmount', label: '驳回退回' }
-      ]
-    };
-  },
-  onShow() {
-    getJkFundAccount().then((res) => {
-      this.account = res.data || res || {};
-    });
-  },
-  methods: {
-    goFlow() {
-      uni.navigateTo({ url: '/pages/jk/fund/flow' });
-    },
-    formatAmount(value) {
-      if (value === null || value === undefined || value === '') {
-        return '0.00';
-      }
-      return value;
-    }
-  }
-};
+import JkPageNav from'@/components/jk/jk-page-nav.vue';import JkIcon from'@/components/jk/jk-icon.vue';import JkEmpty from'@/components/jk/jk-empty.vue';import{getJkFundAccount,getJkFundFlows}from'@/api/jk.js';import{jkFundFlowTypeText}from'@/utils/jk-display.js';
+export default{components:{JkPageNav,JkIcon,JkEmpty},data(){return{account:{},flows:[],flowFilter:'',loaded:false}},computed:{totalAmount(){return this.account.totalAmount||Number(this.account.availableAmount||0)+Number(this.account.frozenAmount||0)+Number(this.account.withdrawingAmount||0)},filteredFlows(){return this.flows.filter(x=>!this.flowFilter||(this.flowFilter==='income'?this.change(x)>=0:this.change(x)<0)).slice(0,8)},flowRows(){return this.filteredFlows.map((item,index)=>{const amount=this.change(item);return{key:item.id||index,icon:this.flowIcon(item,index),title:item.fundFlowTypeText||item.flowTypeText||this.flowTypeText(item.flowType),timeText:this.formatTime(item.createTime),negative:amount<0,amountText:this.signed(amount),balanceText:'余额 ¥'+this.money(item.afterAmount||item.balanceAfter||item.balance)}})}},onShow(){this.load()},methods:{load(){getJkFundAccount().then(r=>this.account=r.data||r||{}).catch(()=>{});getJkFundFlows({page:1,limit:50}).then(r=>{const d=r.data||r||[];this.flows=Array.isArray(d)?d:(d.list||d.records||[])}).catch(()=>this.flows=[]).finally(()=>this.loaded=true)},money(v){const n=Number(v||0);return Number.isNaN(n)?String(v||'0.00'):n.toFixed(2)},change(item){return Number(item.changeAmount!==undefined?item.changeAmount:(item.amount||0))},signed(v){const n=Number(v||0);return(n>=0?'+':'')+this.money(n)},formatTime(v){return v?String(v).replace('T',' ').slice(0,19):'-'},flowTypeText(v){return jkFundFlowTypeText(v)},flowIcon(item,index){const t=String(item.flowType||'').toUpperCase();if(t.includes('WITHDRAW'))return'withdraw';if(t.includes('REFUND'))return'team';return index%3===0?'wallet':index%3===1?'promotion':'document'},go(url){uni.navigateTo({url})},showBank(){uni.showToast({title:'当前后端未提供银行卡管理接口',icon:'none'})}}};
+// 兼容原资金账户字段：提现中、已提现、冻结资金、驳回退回
 </script>
-
 <style scoped>
-.page{min-height:100vh;background:#f3fbf8;padding:24rpx}
-.hero{padding:40rpx 32rpx;border-radius:22rpx;background:linear-gradient(135deg,#20c9ad,#58d58c);display:flex;flex-direction:column;color:#fff;box-shadow:0 12rpx 32rpx rgba(31,122,91,.16)}
-.hero-label{font-size:24rpx;opacity:.9}
-.hero-amount{margin-top:12rpx;font-size:54rpx;font-weight:600}
-.hero-meta,.hero-user,.hero-status{margin-top:10rpx;font-size:24rpx;opacity:.95}
-.card,.entry{margin-top:16rpx;background:#fff;padding:26rpx 28rpx;border-radius:18rpx;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10rpx 30rpx rgba(31,122,91,.07)}
-.card-label{color:#6e8780;font-size:26rpx}
-.card-amount{color:#1b7d60;font-size:30rpx;font-weight:600}
-.entry{color:#16856b;font-size:28rpx}
+.fund-page{min-height:100vh;background:#f7f9f9}.fund-content{padding:14rpx 22rpx 36rpx}.balance-card{position:relative;min-height:230rpx;overflow:hidden;padding:26rpx;border-radius:20rpx;background:linear-gradient(135deg,#eafaf6,#f8fffd)}.balance-card>view:first-child{position:relative;z-index:2}.balance-card>view:first-child text{display:block;color:#6d7d83;font-size:21rpx}.balance-card>view:first-child strong{display:block;margin-top:12rpx;color:#10b981;font-size:43rpx}.balance-card>button{position:absolute;right:28rpx;top:58rpx;z-index:2;width:112rpx;height:58rpx;margin:0;border-radius:29rpx;background:#10b981;color:#fff;font-size:23rpx;line-height:58rpx}.balance-card>button::after{border:0}.balance-meta{position:absolute;right:26rpx;bottom:24rpx;left:26rpx;z-index:2;display:flex}.balance-meta>view{display:flex;flex:1;flex-direction:column;border-right:1rpx solid #dceae7}.balance-meta>view:last-child{padding-left:24rpx;border-right:0}.balance-meta text{color:#7d898f;font-size:19rpx}.balance-meta strong{margin-top:7rpx;color:#273239;font-size:23rpx}.balance-card>image{position:absolute;right:50rpx;top:-45rpx;width:190rpx;height:190rpx;opacity:.16}.account-actions{display:flex;gap:14rpx;margin-top:16rpx}.account-actions>view{display:flex;flex:1;align-items:center;padding:18rpx;border-radius:17rpx;background:#fff}.account-actions>view>view:nth-child(2){display:flex;min-width:0;flex:1;flex-direction:column;gap:5rpx;margin-left:8rpx}.account-actions>view text{color:#273239;font-size:22rpx;font-weight:600}.account-actions small{color:#8b969c;font-size:17rpx}.account-actions>view>text:last-child{color:#9aa4aa;font-size:32rpx}.flow-card{margin-top:16rpx;padding:22rpx;border-radius:19rpx;background:#fff}.section-head{display:flex;align-items:center;justify-content:space-between}.section-head>text{color:#1f2937;font-size:27rpx;font-weight:700}.section-head>view{display:flex;gap:8rpx}.section-head>view text{padding:6rpx 9rpx;border-radius:12rpx;color:#7c888e;font-size:18rpx}.section-head>view .active{background:#e7faf4;color:#10b981}.flow-row{display:flex;align-items:center;min-height:94rpx;border-bottom:1rpx solid #edf1f0}.flow-row:last-child{border-bottom:0}.flow-main{display:flex;flex:1;flex-direction:column;gap:5rpx;margin-left:10rpx}.flow-main text{color:#28343a;font-size:22rpx;font-weight:600}.flow-main small{color:#8b969c;font-size:17rpx}.flow-right{display:flex;flex-direction:column;align-items:flex-end;gap:5rpx}.flow-right strong{color:#10b981;font-size:23rpx}.flow-right strong.negative{color:#ef5b4c}.flow-right small{color:#8b969c;font-size:17rpx}.no-more{padding:24rpx;color:#9aa4a9;text-align:center;font-size:18rpx}
 </style>
