@@ -60,10 +60,10 @@ import { getJkPermissionContext, getJkBusinessSummary } from '@/api/jk.js';
 const ROLE={maker:'创客',partner:'合伙人',county_agent:'区县代',normal_user:'普通用户',health_advisor:'健康顾问',city_agent:'市代',province_agent:'省代'};
 export default {
   components:{JkPageNav,JkIcon,JkStatusTag,JkEmpty},
-  data(){return{context:{permissions:[]},summary:{},stockValue:'0.00',incomeValue:'0.00',stockValueBasis:'',pending:{order:0,transfer:0,audit:0,receive:0},loaded:false};},
+  data(){return{context:{permissions:[]},summary:{},stockValue:'0.00',incomeValue:'0.00',stockValueBasis:'',pending:{order:0,transfer:0,audit:0,receive:0,exception:0},loaded:false};},
   computed:{
     roleName(){return this.context.primaryRoleName||ROLE[this.context.primaryRoleCode]||'普通用户';},
-    pendingCount(){return Number(this.summary.pendingCount!==undefined?this.summary.pendingCount:(Number(this.pending.order||0)+Number(this.pending.transfer||0)+Number(this.pending.audit||0)+Number(this.pending.receive||0)));},
+    pendingCount(){return Number(this.summary.pendingCount!==undefined?this.summary.pendingCount:(Number(this.pending.order||0)+Number(this.pending.transfer||0)+Number(this.pending.audit||0)+Number(this.pending.receive||0)+Number(this.pending.exception||0)));},
     defaultOrderUrl(){return this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=order':'/pages/jk/trade/list?mode=transfer';},
     menus(){
       const role=this.context.primaryRoleCode;const items=[];
@@ -81,6 +81,7 @@ export default {
     },
     todoItems(){
       const items=[];
+      if(this.pending.exception)items.push({name:'收货异常处理中',icon:'document',count:this.pending.exception,url:'/pages/jk/receiveException/list'});
       if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});
       if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});
       if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});
@@ -104,7 +105,7 @@ export default {
         this.stockValue=this.money(summary.stockValue);
         this.incomeValue=this.money(summary.totalCommissionAmount);
         this.stockValueBasis=summary.stockValueBasis||'';
-        this.pending={order:Number(summary.pendingOrderCount||0),transfer:Number(summary.pendingTransferCount||0),audit:Number(summary.pendingAuditCount||0),receive:Number(summary.pendingReceiveCount||0)};
+        this.pending={order:Number(summary.pendingOrderCount||0),transfer:Number(summary.pendingTransferCount||0),audit:Number(summary.pendingAuditCount||0),receive:Number(summary.pendingReceiveCount||0),exception:Number(summary.receiveExceptionCount||0)};
       }).finally(()=>{this.loaded=true;});
     },
     hasPermission(code,roleFallback){const permissions=this.context.permissions||[];return permissions.length?permissions.includes(code):!!roleFallback;},
@@ -112,7 +113,7 @@ export default {
     go(url){if(this.context.freezeStatus)return this.$util.Tips({title:this.context.disabledReasonText||this.context.freezeReason||'当前身份已冻结'});uni.navigateTo({url});},
     goMenu(item){this.go(item.url);},
     goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},
-    openAllTodo(){this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},
+    openAllTodo(){if(this.pending.exception)return this.go('/pages/jk/receiveException/list');this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},
     showDataHelp(){uni.showModal({title:'数据说明',content:'库存价值由后端按CRMEB商品/SKU成本价估算，成本缺失时回退零售价；累计收益来自佣金账户；待办数量由后端按完整业务单据统计。',showCancel:false});},
     switchUser(){uni.switchTab({url:'/pages/user/index'});},stay(){}
   }
