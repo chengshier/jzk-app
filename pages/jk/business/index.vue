@@ -72,11 +72,12 @@ export default {
       if(this.hasPermission('stock.apply',['maker','partner'].includes(role)))items.push({name:'我的调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=transfer'});
       if(this.hasPermission('stock.view.self',['maker','partner','county_agent'].includes(role)))items.push({name:'我的库存',icon:'stock',url:'/pages/jk/stock/index'});
       if(this.hasPermission('stock.flow.view',['maker','partner','county_agent'].includes(role)))items.push({name:'库存流水',icon:'flow',url:'/pages/jk/stock/flow'});
+      if(['maker','partner','county_agent'].includes(role))items.push({name:'收货异常',icon:'document',url:'/pages/jk/receiveException/list'});
       if(this.hasPermission('commission.view.self',['maker','partner','county_agent'].includes(role)))items.push({name:'收益中心',icon:'money',url:'/pages/jk/commission/index'});
       if(this.hasPermission('fund.account.view',['maker','partner','county_agent'].includes(role)))items.push({name:'资金账户',icon:'wallet',url:'/pages/jk/fund/account'});
       if(this.hasPermission('withdraw.apply',['maker','partner','county_agent'].includes(role)))items.push({name:'提现申请',icon:'withdraw',url:'/pages/jk/withdraw/apply'});
       if(this.hasPermission('team.view.direct',['maker','partner','county_agent'].includes(role)))items.push({name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
-      return items.slice(0,8);
+      return items.slice(0,9);
     },
     todoItems(){
       const items=[];
