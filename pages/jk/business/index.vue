@@ -7,7 +7,7 @@
         <view class="banner-main">
           <view class="banner-title"><text>{{ roleName }}</text><jk-status-tag :text="context.freezeStatus?'身份冻结':'身份正常'" :tone="context.freezeStatus?'danger':'success'"/></view>
           <text class="banner-region">{{ context.regionName || context.regionCode || '暂未绑定区域' }}</text>
-          <text class="banner-valid">有效期：长期有效</text>
+          <text class="banner-valid">有效期：{{ context.expireTime ? String(context.expireTime).slice(0,10) : '长期有效' }}</text>
         </view>
         <button class="detail-btn" @tap="goStatus">身份详情 ›</button>
         <image class="banner-watermark" src="/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
@@ -36,7 +36,7 @@
         <view v-for="item in todoItems" :key="item.name" class="todo-row" @tap="go(item.url)">
           <jk-icon :name="item.icon" size="sm"/><text class="todo-name">{{ item.name }}</text><text class="todo-count">{{ item.count }}</text><text class="todo-arrow">›</text>
         </view>
-        <jk-empty v-if="!todoItems.length" text="暂无待处理事项"/>
+        <jk-empty v-if="loaded && !todoItems.length" text="暂无待处理事项"/>
       </view>
     </view>
 
@@ -55,47 +55,65 @@ import JkPageNav from '@/components/jk/jk-page-nav.vue';
 import JkIcon from '@/components/jk/jk-icon.vue';
 import JkStatusTag from '@/components/jk/jk-status-tag.vue';
 import JkEmpty from '@/components/jk/jk-empty.vue';
-import { getJkPermissionContext, getJkMyStock, getJkCommissionSummary, getJkPlatformOrderList, getJkStockTransferList, getJkHandledTransferList } from '@/api/jk.js';
+import { getJkPermissionContext, getJkBusinessSummary } from '@/api/jk.js';
+
 const ROLE={maker:'创客',partner:'合伙人',county_agent:'区县代',normal_user:'普通用户',health_advisor:'健康顾问',city_agent:'市代',province_agent:'省代'};
 export default {
   components:{JkPageNav,JkIcon,JkStatusTag,JkEmpty},
-  data(){return{context:{permissions:[]},stockValue:'0.00',incomeValue:'0.00',pending:{order:0,transfer:0,audit:0,receive:0}};},
+  data(){return{context:{permissions:[]},summary:{},stockValue:'0.00',incomeValue:'0.00',stockValueBasis:'',pending:{order:0,transfer:0,audit:0,receive:0},loaded:false};},
   computed:{
     roleName(){return this.context.primaryRoleName||ROLE[this.context.primaryRoleCode]||'普通用户';},
-    pendingCount(){return Number(this.pending.order||0)+Number(this.pending.transfer||0)+Number(this.pending.audit||0)+Number(this.pending.receive||0);},
+    pendingCount(){return Number(this.summary.pendingCount!==undefined?this.summary.pendingCount:(Number(this.pending.order||0)+Number(this.pending.transfer||0)+Number(this.pending.audit||0)+Number(this.pending.receive||0)));},
     defaultOrderUrl(){return this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=order':'/pages/jk/trade/list?mode=transfer';},
     menus(){
       const role=this.context.primaryRoleCode;const items=[];
-      if(role==='county_agent')items.push({name:'平台订货',icon:'order',url:'/pages/jk/trade/list?mode=order'},{name:'下级调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=handleTransfer'});
-      if(['maker','partner'].includes(role))items.push({name:'我的调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=transfer'});
-      if(['maker','partner','county_agent'].includes(role))items.push({name:'我的库存',icon:'stock',url:'/pages/jk/stock/index'},{name:'库存流水',icon:'flow',url:'/pages/jk/stock/flow'},{name:'收益中心',icon:'money',url:'/pages/jk/commission/index'},{name:'资金账户',icon:'wallet',url:'/pages/jk/fund/account'},{name:'提现申请',icon:'withdraw',url:'/pages/jk/withdraw/apply'},{name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
+      if(this.hasPermission('stock.platform.order',role==='county_agent'))items.push({name:'平台订货',icon:'order',url:'/pages/jk/trade/list?mode=order'});
+      if(this.hasPermission('stock.transfer.audit',role==='county_agent'))items.push({name:'下级调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=handleTransfer'});
+      if(this.hasPermission('stock.apply',['maker','partner'].includes(role)))items.push({name:'我的调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=transfer'});
+      if(this.hasPermission('stock.view.self',['maker','partner','county_agent'].includes(role)))items.push({name:'我的库存',icon:'stock',url:'/pages/jk/stock/index'});
+      if(this.hasPermission('stock.flow.view',['maker','partner','county_agent'].includes(role)))items.push({name:'库存流水',icon:'flow',url:'/pages/jk/stock/flow'});
+      if(this.hasPermission('commission.view.self',['maker','partner','county_agent'].includes(role)))items.push({name:'收益中心',icon:'money',url:'/pages/jk/commission/index'});
+      if(this.hasPermission('fund.account.view',['maker','partner','county_agent'].includes(role)))items.push({name:'资金账户',icon:'wallet',url:'/pages/jk/fund/account'});
+      if(this.hasPermission('withdraw.apply',['maker','partner','county_agent'].includes(role)))items.push({name:'提现申请',icon:'withdraw',url:'/pages/jk/withdraw/apply'});
+      if(this.hasPermission('team.view.direct',['maker','partner','county_agent'].includes(role)))items.push({name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
       return items.slice(0,8);
     },
     todoItems(){
       const items=[];
-      if(this.context.primaryRoleCode==='county_agent'){
-        if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});
-        if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});
-        if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});
-      }else{
-        if(this.pending.transfer)items.push({name:'待处理调拨单',icon:'transfer',count:this.pending.transfer,url:'/pages/jk/trade/list?mode=transfer'});
-      }
+      if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});
+      if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});
+      if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});
+      if(this.pending.transfer)items.push({name:'待处理调拨单',icon:'transfer',count:this.pending.transfer,url:'/pages/jk/trade/list?mode=transfer'});
       return items;
     }
   },
   onShow(){this.load();},
   methods:{
     load(){
-      getJkPermissionContext().then(r=>this.context=r.data||r||{permissions:[]}).catch(()=>{});
-      getJkMyStock().then(r=>{const d=r.data||r||{};this.stockValue=this.money(d.totalValue||d.stockValue||d.totalAmount)}).catch(()=>{});
-      getJkCommissionSummary().then(r=>{const d=r.data||r||{};this.incomeValue=this.money(d.totalCommissionAmount||d.totalAmount||d.settledAmount||(d.fundAccount&&d.fundAccount.availableAmount))}).catch(()=>{});
-      getJkPlatformOrderList({page:1,limit:100}).then(r=>{const rows=((r.data||r||{}).list||[]);this.pending.order=rows.filter(x=>['CREATED','PAYMENT_REJECTED'].includes(x.status)).length;this.pending.receive=rows.filter(x=>x.status==='SHIPPED').length;}).catch(()=>{});
-      getJkStockTransferList({page:1,limit:100}).then(r=>{const rows=((r.data||r||{}).list||[]);this.pending.transfer=rows.filter(x=>['SUBMITTED','AUDIT_APPROVED','PAYMENT_SUBMITTED','PAYMENT_APPROVED','TRANSFERRED'].includes(x.status)).length;}).catch(()=>{});
-      getJkHandledTransferList({page:1,limit:100}).then(r=>{const rows=((r.data||r||{}).list||[]);this.pending.audit=rows.filter(x=>['SUBMITTED','PAYMENT_SUBMITTED','PAYMENT_APPROVED'].includes(x.status)).length;}).catch(()=>{});
+      this.loaded=false;
+      Promise.all([
+        getJkPermissionContext().catch(()=>({})),
+        getJkBusinessSummary().catch(()=>({}))
+      ]).then(([contextRes,summaryRes])=>{
+        const context=contextRes.data||contextRes||{};
+        const summary=summaryRes.data||summaryRes||{};
+        this.summary=summary;
+        this.context=Object.assign({permissions:[]},context,(summary.identity||{}));
+        if((!this.context.permissions||!this.context.permissions.length)&&summary.menuPermissions)this.context.permissions=summary.menuPermissions;
+        this.stockValue=this.money(summary.stockValue);
+        this.incomeValue=this.money(summary.totalCommissionAmount);
+        this.stockValueBasis=summary.stockValueBasis||'';
+        this.pending={order:Number(summary.pendingOrderCount||0),transfer:Number(summary.pendingTransferCount||0),audit:Number(summary.pendingAuditCount||0),receive:Number(summary.pendingReceiveCount||0)};
+      }).finally(()=>{this.loaded=true;});
     },
+    hasPermission(code,roleFallback){const permissions=this.context.permissions||[];return permissions.length?permissions.includes(code):!!roleFallback;},
     money(v){if(v===null||v===undefined||v==='')return'0.00';const n=Number(v);return Number.isNaN(n)?String(v):n.toFixed(2);},
-    go(url){if(this.context.freezeStatus)return this.$util.Tips({title:this.context.disabledReasonText||'当前身份已冻结'});uni.navigateTo({url});},
-    goMenu(item){this.go(item.url);},goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},openAllTodo(){this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},showDataHelp(){uni.showToast({title:'数据来源于库存、佣金及业务单据汇总',icon:'none'});},switchUser(){uni.switchTab({url:'/pages/user/index'});},stay(){}
+    go(url){if(this.context.freezeStatus)return this.$util.Tips({title:this.context.disabledReasonText||this.context.freezeReason||'当前身份已冻结'});uni.navigateTo({url});},
+    goMenu(item){this.go(item.url);},
+    goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},
+    openAllTodo(){this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},
+    showDataHelp(){uni.showModal({title:'数据说明',content:'库存价值由后端按CRMEB商品/SKU成本价估算，成本缺失时回退零售价；累计收益来自佣金账户；待办数量由后端按完整业务单据统计。',showCancel:false});},
+    switchUser(){uni.switchTab({url:'/pages/user/index'});},stay(){}
   }
 };
 </script>
