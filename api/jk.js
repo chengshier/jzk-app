@@ -4,6 +4,10 @@ export function getJkPermissionContext() {
   return request.get('jk/permission/context');
 }
 
+export function getJkBusinessSummary() {
+  return request.get('jk/business/summary');
+}
+
 export function submitJkIdentityApply(data) {
   return request.post('jk/identity/apply', data);
 }
