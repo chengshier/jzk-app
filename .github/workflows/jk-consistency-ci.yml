@@ -47,7 +47,9 @@ jobs:
               if result.returncode:
                   failures.append('%s:\n%s' % (path, result.stderr))
 
-          api_result = subprocess.run(['node', '--check', 'api/jk.js'], capture_output=True, text=True)
+          api_temp = pathlib.Path(tempfile.gettempdir()) / 'jk-api-check.mjs'
+          api_temp.write_text(pathlib.Path('api/jk.js').read_text(encoding='utf-8'), encoding='utf-8')
+          api_result = subprocess.run(['node', '--check', str(api_temp)], capture_output=True, text=True)
           if api_result.returncode:
               failures.append('api/jk.js:\n' + api_result.stderr)
           if failures:
