@@ -49,6 +49,14 @@ export function getJkStockTransferDetail(id) { return request.get('jk/stock-tran
 export function submitJkStockTransferVoucher(id, data) { return request.post('jk/stock-transfer/' + id + '/voucher', data); }
 export function receiveJkStockTransfer(id, data = {}) { return request.post('jk/stock-transfer/' + id + '/receive', data); }
 
+// 订货/调拨异常收货 V1：只记录差异并阻断正常入库，后台处理后恢复待收货状态。
+export function reportJkReceiveException(data) { return request.post('jk/receive-exception/report', data); }
+export function getJkReceiveExceptionList(data) { return request.get('jk/receive-exception/list', data); }
+export function getJkReceiveExceptionDetail(id) { return request.get('jk/receive-exception/' + id); }
+export function getJkReceiveExceptionByBusiness(businessType, businessId) {
+  return request.get('jk/receive-exception/business', { businessType, businessId });
+}
+
 export function getJkHandledTransferList(data) { return request.get('jk/stock-transfer/handle/list', data); }
 export function getJkHandledTransferDetail(id) { return request.get('jk/stock-transfer/handle/detail/' + id); }
 export function auditJkHandledTransfer(data) { return request.post('jk/stock-transfer/handle/audit', data); }
