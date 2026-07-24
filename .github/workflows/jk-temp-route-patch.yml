@@ -1,0 +1,41 @@
+name: JK temporary route patch
+
+on:
+  push:
+    branches:
+      - fix/jk-business-consistency
+    paths:
+      - .github/workflows/jk-temp-route-patch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/jk-business-consistency
+      - name: Add receive exception routes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('pages.json')
+          text = path.read_text(encoding='utf-8')
+          if 'receiveException/detail' not in text:
+              marker = '                {"path": "report/index","style":{"navigationBarTitleText": "个人经营中心"}}]'
+              replacement = '                {"path":"receiveException/list","style":{"navigationBarTitleText":"收货异常记录","navigationStyle":"custom"}},\n                {"path":"receiveException/detail","style":{"navigationBarTitleText":"收货异常详情","navigationStyle":"custom"}},\n' + marker
+              if marker not in text:
+                  raise SystemExit('pages.json insertion marker not found')
+              text = text.replace(marker, replacement, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit route patch
+        run: |
+          if git diff --quiet -- pages.json; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pages.json
+          git commit -m "feat: register receive exception app pages"
+          git push origin HEAD:fix/jk-business-consistency
