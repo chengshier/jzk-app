@@ -68,9 +68,10 @@ export function applyJkWithdraw(data) { return request.post('jk/withdraw/apply',
 export function getJkWithdrawList(data) { return request.get('jk/withdraw/list', data); }
 export function getJkWithdrawDetail(id) { return request.get('jk/withdraw/detail/' + id); }
 
-// 团队、推广二维码与换绑
+// 团队、推广二维码、推广素材与换绑
 export function getJkTeamSummary() { return request.get('jk/team/summary'); }
 export function getJkPromotionQrcode() { return request.get('jk/team/qrcode'); }
+export function getJkPromotionMaterials(data) { return request.get('jk/promotion/material/list', data); }
 export function getJkEligibleParentOptions(data) { return request.get('jk/team/relation-change/parent-options', data); }
 export function applyJkRelationChange(data) { return request.post('jk/team/relation-change/apply', data); }
 export function getJkRelationChangeList(data) { return request.get('jk/team/relation-change/list', data); }
