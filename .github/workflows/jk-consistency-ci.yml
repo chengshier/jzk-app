@@ -1,0 +1,53 @@
+name: Jiuzhoukang app static CI
+
+on:
+  push:
+    branches:
+      - fix/jk-business-consistency
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  static-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+      - name: Validate pages and Vue scripts
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import re
+          import subprocess
+          import tempfile
+
+          json.loads(pathlib.Path('pages.json').read_text(encoding='utf-8'))
+          targets = list(pathlib.Path('pages/jk').rglob('*.vue')) + list(pathlib.Path('components/jk').rglob('*.vue'))
+          failures = []
+          for index, path in enumerate(targets):
+              text = path.read_text(encoding='utf-8')
+              match = re.search(r'<script[^>]*>(.*?)</script>', text, re.S)
+              if not match:
+                  continue
+              temp = pathlib.Path(tempfile.gettempdir()) / f'jk-vue-check-{index}.mjs'
+              temp.write_text(match.group(1), encoding='utf-8')
+              result = subprocess.run(['node', '--check', str(temp)], capture_output=True, text=True)
+              if result.returncode:
+                  failures.append(f'{path}:\n{result.stderr}')
+          api_result = subprocess.run(['node', '--check', 'api/jk.js'], capture_output=True, text=True)
+          if api_result.returncode:
+              failures.append('api/jk.js:\n' + api_result.stderr)
+          if failures:
+              raise SystemExit('\n\n'.join(failures))
+          print(f'checked {len(targets)} Vue files and api/jk.js')
+          PY
+      - name: Reject fabricated business data
+        run: |
+          ! grep -R -n "980,1020,940\|当前项目没有推广素材列表接口\|完成订单，获得佣金" pages/jk
