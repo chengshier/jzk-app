@@ -68,6 +68,10 @@ export function getJkCommissionDetail(id) { return request.get('jk/commission/de
 export function getJkFundAccount() { return request.get('jk/fund/account'); }
 export function getJkFundFlows(data) { return request.get('jk/fund/flow/list', data); }
 export function getJkWithdrawConfig() { return request.get('jk/withdraw/config'); }
+export function getJkWithdrawPayeeAccounts() { return request.get('jk/withdraw/payee-account/list'); }
+export function saveJkWithdrawPayeeAccount(data) { return request.post('jk/withdraw/payee-account/save', data); }
+export function setDefaultJkWithdrawPayeeAccount(id) { return request.post('jk/withdraw/payee-account/' + id + '/default', {}); }
+export function deleteJkWithdrawPayeeAccount(id) { return request.post('jk/withdraw/payee-account/' + id + '/delete', {}); }
 export function applyJkWithdraw(data) { return request.post('jk/withdraw/apply', data); }
 export function getJkWithdrawList(data) { return request.get('jk/withdraw/list', data); }
 export function getJkWithdrawDetail(id) { return request.get('jk/withdraw/detail/' + id); }
