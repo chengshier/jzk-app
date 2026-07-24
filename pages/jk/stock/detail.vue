@@ -25,8 +25,8 @@
         <view v-if="trendRows.length" class="chart">
           <view v-for="row in trendRows" :key="row.key" class="chart-column"><text>{{row.value}}</text><view class="bar" :style="row.style"></view><small>{{row.label}}</small></view>
         </view>
-        <jk-empty v-else text="暂无真实库存趋势数据"/>
-        <text v-if="!trendRows.length" class="data-note">趋势接口尚未返回数据，页面不会生成模拟库存走势。</text>
+        <jk-empty v-else-if="loaded" text="暂无库存趋势数据"/>
+        <text v-if="item.trendDescription" class="data-note">{{item.trendDescription}}</text>
       </view>
 
       <view class="card">
@@ -35,8 +35,8 @@
           <view class="table-head"><text>批次号</text><text>可用库存</text><text>冻结库存</text><text>单位成本</text></view>
           <view v-for="batch in batches" :key="batch.id||batch.batchNo" class="table-row"><text>{{batch.batchNo||'-'}}</text><text>{{batch.availableQty||0}}</text><text>{{batch.frozenQty||0}}</text><text>¥{{money(batch.unitCost)}}</text></view>
         </template>
-        <jk-empty v-else text="暂无真实批次数据"/>
-        <text v-if="!batches.length" class="data-note">批次应由订货、调拨和退回入库自动生成，不需要重复手工入库。</text>
+        <jk-empty v-else-if="loaded" text="暂无真实批次数据"/>
+        <text v-if="loaded&&!batches.length" class="data-note">批次应由订货、调拨和退回入库自动生成，不需要重复手工入库。</text>
       </view>
 
       <button class="flow-button" @tap="goFlow"><jk-icon name="document" size="sm"/>查看库存流水 <text>›</text></button>
@@ -45,24 +45,57 @@
   </view>
 </template>
 <script>
-import JkPageNav from'@/components/jk/jk-page-nav.vue';
-import JkIcon from'@/components/jk/jk-icon.vue';
-import JkStatusTag from'@/components/jk/jk-status-tag.vue';
-import JkEmpty from'@/components/jk/jk-empty.vue';
-export default{
-  components:{JkPageNav,JkIcon,JkStatusTag,JkEmpty},
-  data(){return{item:{}}},
-  computed:{
-    productImage(){return this.item.productImage||this.item.image||'/static/jk-ui-v2/products/glucose-paper.png'},
-    availableQty(){return Number(this.item.availableQuantity!==undefined?this.item.availableQuantity:(this.item.availableQty||this.item.stockQuantity||0))},
-    frozenQty(){return Number(this.item.frozenQuantity!==undefined?this.item.frozenQuantity:(this.item.frozenQty||0))},
-    totalQty(){return this.availableQty+this.frozenQty},
-    unit(){return this.item.unitName||''},
-    trendRows(){const source=Array.isArray(this.item.trend)?this.item.trend:[];if(!source.length)return[];const values=source.map(x=>Number(x.value!==undefined?x.value:x.quantity||0));const max=Math.max(...values,1);return source.map((x,index)=>{const value=values[index];return{key:x.date||x.label||index,value,label:x.label||String(x.date||'').slice(5),style:{height:Math.max(12,value/max*110)+'rpx'}}})},
-    batches(){return Array.isArray(this.item.batchList)?this.item.batchList:(Array.isArray(this.item.batches)?this.item.batches:[])}
+import JkPageNav from '@/components/jk/jk-page-nav.vue';
+import JkIcon from '@/components/jk/jk-icon.vue';
+import JkStatusTag from '@/components/jk/jk-status-tag.vue';
+import JkEmpty from '@/components/jk/jk-empty.vue';
+import { getJkStockSkuDetail } from '@/api/jk.js';
+export default {
+  components: { JkPageNav, JkIcon, JkStatusTag, JkEmpty },
+  data() { return { item: {}, skuId: null, productId: null, loaded: false }; },
+  computed: {
+    productImage() { return this.item.productImage || this.item.image || '/static/jk-ui-v2/products/glucose-paper.png'; },
+    availableQty() { return Number(this.item.availableQuantity !== undefined ? this.item.availableQuantity : (this.item.availableQty || this.item.stockQuantity || 0)); },
+    frozenQty() { return Number(this.item.frozenQuantity !== undefined ? this.item.frozenQuantity : (this.item.frozenQty || 0)); },
+    totalQty() { return this.availableQty + this.frozenQty; },
+    unit() { return this.item.unitName || ''; },
+    trendRows() {
+      const source = Array.isArray(this.item.trend) ? this.item.trend : [];
+      if (!source.length) return [];
+      const values = source.map((row) => Number(row.value !== undefined ? row.value : (row.quantity || 0)));
+      const max = Math.max(...values, 1);
+      return source.map((row, index) => {
+        const value = values[index];
+        return { key: row.date || row.label || index, value, label: row.label || String(row.date || '').slice(5), style: { height: Math.max(12, value / max * 110) + 'rpx' } };
+      });
+    },
+    batches() { return Array.isArray(this.item.batchList) ? this.item.batchList : (Array.isArray(this.item.batches) ? this.item.batches : []); }
   },
-  onLoad(q){try{this.item=JSON.parse(decodeURIComponent(q.item||'%7B%7D'))}catch(e){this.item={}}},
-  methods:{money(v){const n=Number(v||0);return Number.isNaN(n)?'0.00':n.toFixed(2)},formatTime(v){return v?String(v).replace('T',' ').slice(0,19):'-'},goFlow(){uni.navigateTo({url:'/pages/jk/stock/flow'})}}
+  onLoad(query) {
+    this.skuId = query.skuId ? Number(query.skuId) : null;
+    this.productId = query.productId ? Number(query.productId) : null;
+    if (!this.skuId) {
+      try { this.item = JSON.parse(decodeURIComponent(query.item || '%7B%7D')); } catch (error) { this.item = {}; }
+      this.loaded = true;
+      return;
+    }
+    getJkStockSkuDetail(this.skuId, this.productId).then((response) => {
+      this.item = response.data || response || {};
+    }).catch((error) => {
+      this.item = {};
+      uni.showToast({ title: (error && error.message) || '库存详情加载失败', icon: 'none' });
+    }).finally(() => { this.loaded = true; });
+  },
+  methods: {
+    money(value) { const number = Number(value || 0); return Number.isNaN(number) ? '0.00' : number.toFixed(2); },
+    formatTime(value) { return value ? String(value).replace('T', ' ').slice(0, 19) : '-'; },
+    goFlow() {
+      const query = [];
+      if (this.item.productId) query.push('productId=' + this.item.productId);
+      if (this.item.skuId) query.push('skuId=' + this.item.skuId);
+      uni.navigateTo({ url: '/pages/jk/stock/flow' + (query.length ? ('?' + query.join('&')) : '') });
+    }
+  }
 };
 </script>
 <style scoped>
