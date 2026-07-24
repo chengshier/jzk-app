@@ -1,9 +1,92 @@
 <template>
-  <view class="flow-page"><jk-page-nav title="库存流水"/><view class="flow-content"><view class="tabs"><text v-for="item in filters" :key="item.value" :class="{active:active===item.value}" @tap="active=item.value">{{item.label}}</text></view><view class="identity-chip"><jk-icon name="user" size="sm"/><text>当前身份库存</text><span>⌄</span></view><view v-for="group in groupedList" :key="group.label" class="flow-group"><view class="group-title"><text>{{group.label}}</text><small>{{group.date}}</small></view><view class="timeline-list"><view v-for="item in group.items" :key="item.key" class="flow-row"><view class="line-dot"></view><view :class="item.changeClass"><strong>{{item.changeText}}</strong><small>数量变化</small></view><jk-icon :name="item.icon" size="md"/><view class="flow-main"><text>{{item.title}}</text><small>{{item.sourceText}}</small><small>{{item.productText}}</small></view><text class="time">{{item.timeText}}</text></view></view></view><jk-empty v-if="loaded&&!filteredList.length" text="暂无库存流水"/><view v-if="filteredList.length" class="no-more">没有更多数据了</view></view></view>
+  <view class="flow-page">
+    <jk-page-nav title="库存流水"/>
+    <view class="flow-content">
+      <view class="tabs"><text v-for="item in filters" :key="item.value" :class="{active:active===item.value}" @tap="active=item.value">{{item.label}}</text></view>
+      <view class="identity-chip"><jk-icon name="user" size="sm"/><text>{{skuId?'当前SKU库存流水':'当前身份库存'}}</text><span>⌄</span></view>
+      <view v-for="group in groupedList" :key="group.label+group.date" class="flow-group"><view class="group-title"><text>{{group.label}}</text><small>{{group.date}}</small></view><view class="timeline-list"><view v-for="item in group.items" :key="item.key" class="flow-row"><view class="line-dot"></view><view :class="item.changeClass"><strong>{{item.changeText}}</strong><small>数量变化</small></view><jk-icon :name="item.icon" size="md"/><view class="flow-main"><text>{{item.title}}</text><small>{{item.sourceText}}</small><small>{{item.productText}}</small></view><text class="time">{{item.timeText}}</text></view></view></view>
+      <jk-empty v-if="loaded&&!filteredList.length" text="暂无库存流水"/>
+      <view v-if="filteredList.length" class="no-more">没有更多数据了</view>
+    </view>
+  </view>
 </template>
 <script>
-import{getJkMyStockFlows}from'@/api/jk.js';import JkPageNav from'@/components/jk/jk-page-nav.vue';import JkIcon from'@/components/jk/jk-icon.vue';import JkEmpty from'@/components/jk/jk-empty.vue';import{jkSourceTypeText,jkStockFlowTypeText}from'@/utils/jk-display.js';
-export default{components:{JkPageNav,JkIcon,JkEmpty},data(){return{list:[],active:'',loaded:false,filters:[{label:'全部',value:''},{label:'入库',value:'in'},{label:'出库',value:'out'},{label:'调拨',value:'transfer'},{label:'其他',value:'other'}]}},computed:{filteredList(){return this.list.filter(item=>{const t=String(item.flowType||item.flowTypeText||'').toUpperCase();if(!this.active)return true;if(this.active==='in')return t.includes('IN')||this.changeValue(item)>0;if(this.active==='out')return t.includes('OUT')||this.changeValue(item)<0;if(this.active==='transfer')return t.includes('TRANSFER')||String(item.businessType||'').includes('TRANSFER');return !t.includes('IN')&&!t.includes('OUT')&&!t.includes('TRANSFER')})},flowRows(){return this.filteredList.map((item,index)=>{const change=this.changeValue(item);return{key:item.id||index,raw:item,changeClass:['change',change>=0?'positive':'negative'],changeText:(change>=0?'+':'')+change,icon:change>=0?'stock':'transfer',title:item.flowTypeText||this.flowTypeText(item.flowType),sourceText:'来源：'+(item.businessTypeText||item.sourceTypeText||this.sourceTypeText(item.businessType||item.sourceType)),productText:(item.productName||'')+' '+(item.skuText||item.skuName||''),timeText:this.shortTime(item.createTime)}})},groupedList(){const map={};this.flowRows.forEach(item=>{const day=String((item.raw||{}).createTime||'').slice(0,10)||'未知日期';(map[day]||(map[day]=[])).push(item)});const days=Object.keys(map).sort().reverse();const today=new Date().toISOString().slice(0,10);const y=new Date(Date.now()-86400000).toISOString().slice(0,10);return days.map(day=>({date:day.slice(5).replace('-','月')+'日',label:day===today?'今天':day===y?'昨天':day,items:map[day]}))}},onShow(){getJkMyStockFlows({page:1,limit:100}).then(r=>{const d=r.data||r||{};this.list=d.list||d.records||(Array.isArray(d)?d:[])}).catch(()=>this.list=[]).finally(()=>this.loaded=true)},methods:{flowTypeText(v){return jkStockFlowTypeText(v)},sourceTypeText(v){return jkSourceTypeText(v)},changeValue(item){if(item.changeQuantity!==undefined)return Number(item.changeQuantity);if(item.changeQty!==undefined)return Number(item.changeQty);return Number(item.afterAvailableQty||0)-Number(item.beforeAvailableQty||0)},shortTime(v){return v?String(v).replace('T',' ').slice(11,16):'-'}}};
+import { getJkMyStockFlows } from '@/api/jk.js';
+import JkPageNav from '@/components/jk/jk-page-nav.vue';
+import JkIcon from '@/components/jk/jk-icon.vue';
+import JkEmpty from '@/components/jk/jk-empty.vue';
+import { jkSourceTypeText, jkStockFlowTypeText } from '@/utils/jk-display.js';
+export default {
+  components: { JkPageNav, JkIcon, JkEmpty },
+  data() {
+    return {
+      list: [], active: '', loaded: false, productId: null, skuId: null,
+      filters: [{ label: '全部', value: '' }, { label: '入库', value: 'in' }, { label: '出库', value: 'out' }, { label: '调拨', value: 'transfer' }, { label: '其他', value: 'other' }]
+    };
+  },
+  computed: {
+    filteredList() {
+      return this.list.filter((item) => {
+        const type = String(item.flowType || item.flowTypeText || '').toUpperCase();
+        if (!this.active) return true;
+        if (this.active === 'in') return type.includes('IN') || this.changeValue(item) > 0;
+        if (this.active === 'out') return type.includes('OUT') || this.changeValue(item) < 0;
+        if (this.active === 'transfer') return type.includes('TRANSFER') || String(item.businessType || '').includes('TRANSFER');
+        return !type.includes('IN') && !type.includes('OUT') && !type.includes('TRANSFER');
+      });
+    },
+    flowRows() {
+      return this.filteredList.map((item, index) => {
+        const change = this.changeValue(item);
+        return {
+          key: item.id || index, raw: item,
+          changeClass: ['change', change >= 0 ? 'positive' : 'negative'],
+          changeText: (change >= 0 ? '+' : '') + change,
+          icon: change >= 0 ? 'stock' : 'transfer',
+          title: item.flowTypeText || this.flowTypeText(item.flowType),
+          sourceText: '来源：' + (item.businessTypeText || item.sourceTypeText || this.sourceTypeText(item.businessType || item.sourceType)),
+          productText: (item.productName || '') + ' ' + (item.skuText || item.skuName || ''),
+          timeText: this.shortTime(item.createTime)
+        };
+      });
+    },
+    groupedList() {
+      const map = {};
+      this.flowRows.forEach((item) => {
+        const day = String((item.raw || {}).createTime || '').slice(0, 10) || '未知日期';
+        (map[day] || (map[day] = [])).push(item);
+      });
+      const days = Object.keys(map).sort().reverse();
+      const today = new Date().toISOString().slice(0, 10);
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      return days.map((day) => ({ date: day.slice(5).replace('-', '月') + '日', label: day === today ? '今天' : (day === yesterday ? '昨天' : day), items: map[day] }));
+    }
+  },
+  onLoad(query) {
+    this.productId = query.productId ? Number(query.productId) : null;
+    this.skuId = query.skuId ? Number(query.skuId) : null;
+    this.load();
+  },
+  methods: {
+    load() {
+      const params = { page: 1, limit: 100 };
+      if (this.productId) params.productId = this.productId;
+      if (this.skuId) params.skuId = this.skuId;
+      getJkMyStockFlows(params).then((response) => {
+        const data = response.data || response || {};
+        this.list = data.list || data.records || (Array.isArray(data) ? data : []);
+      }).catch(() => { this.list = []; }).finally(() => { this.loaded = true; });
+    },
+    flowTypeText(value) { return jkStockFlowTypeText(value); },
+    sourceTypeText(value) { return jkSourceTypeText(value); },
+    changeValue(item) {
+      if (item.changeQuantity !== undefined) return Number(item.changeQuantity);
+      if (item.changeQty !== undefined) return Number(item.changeQty);
+      return Number(item.afterAvailableQty || 0) - Number(item.beforeAvailableQty || 0);
+    },
+    shortTime(value) { return value ? String(value).replace('T', ' ').slice(11, 16) : '-'; }
+  }
+};
 </script>
 <style scoped>
 .flow-page{min-height:100vh;background:#fff}.flow-content{padding:0 22rpx 38rpx}.tabs{display:flex;margin:10rpx 0 18rpx;padding:4rpx;border-radius:16rpx;background:#f7f9f9}.tabs text{position:relative;flex:1;padding:16rpx 0;color:#727f85;text-align:center;font-size:22rpx}.tabs text.active{border-radius:13rpx;background:#fff;color:#10b981;font-weight:700;box-shadow:0 4rpx 12rpx rgba(20,72,59,.04)}.identity-chip{display:flex;align-items:center;margin-bottom:22rpx;padding:6rpx 14rpx;border-radius:23rpx;background:#eafaf6;color:#10a981;font-size:21rpx}.identity-chip text{margin:0 5rpx}.group-title{display:flex;align-items:center;gap:12rpx;margin:18rpx 0}.group-title text{color:#1f2937;font-size:28rpx;font-weight:700}.group-title small{color:#8b969c;font-size:20rpx}.timeline-list{position:relative}.timeline-list::before{position:absolute;left:9rpx;top:28rpx;bottom:28rpx;width:2rpx;background:#e1e7e5;content:''}.flow-row{position:relative;display:flex;align-items:center;min-height:126rpx;margin-bottom:14rpx;padding:16rpx 14rpx 16rpx 30rpx;border-radius:16rpx;background:#fff;box-shadow:0 5rpx 16rpx rgba(24,68,58,.035)}.line-dot{position:absolute;left:3rpx;width:14rpx;height:14rpx;border:3rpx solid #dce5e2;border-radius:50%;background:#fff}.change{display:flex;width:100rpx;flex-direction:column;align-items:flex-start}.change strong{font-size:31rpx}.change small{margin-top:5rpx;color:#8c979c;font-size:18rpx}.change.positive strong{color:#10b981}.change.negative strong{color:#f06440}.flow-main{display:flex;min-width:0;flex:1;flex-direction:column;gap:5rpx;margin-left:10rpx}.flow-main text{color:#28343a;font-size:24rpx;font-weight:600}.flow-main small{overflow:hidden;color:#859198;font-size:19rpx;text-overflow:ellipsis;white-space:nowrap}.time{color:#65737a;font-size:21rpx}.no-more{padding:28rpx;color:#9aa4a9;text-align:center;font-size:20rpx}
