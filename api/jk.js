@@ -56,6 +56,10 @@ export function confirmJkHandledTransferPayment(data) { return request.post('jk/
 export function confirmJkHandledTransfer(data) { return request.post('jk/stock-transfer/handle/confirm-transfer', data); }
 export function closeJkHandledTransfer(data) { return request.post('jk/stock-transfer/handle/close', data); }
 export function getJkMyStock() { return request.get('jk/stock/my'); }
+export function getJkStockSkuDetail(skuId, productId) {
+  const params = productId ? { productId } : {};
+  return request.get('jk/stock/sku/' + skuId + '/detail', params);
+}
 export function getJkMyStockFlows(data) { return request.get('jk/stock/flow/list', data); }
 
 export function getJkCommissionSummary() { return request.get('jk/commission/summary'); }
@@ -70,6 +74,7 @@ export function getJkWithdrawDetail(id) { return request.get('jk/withdraw/detail
 
 // 团队、推广二维码、推广素材与换绑
 export function getJkTeamSummary() { return request.get('jk/team/summary'); }
+export function getJkTeamMemberDetail(userId) { return request.get('jk/team/member/' + userId); }
 export function getJkPromotionQrcode() { return request.get('jk/team/qrcode'); }
 export function getJkPromotionMaterials(data) { return request.get('jk/promotion/material/list', data); }
 export function getJkEligibleParentOptions(data) { return request.get('jk/team/relation-change/parent-options', data); }
