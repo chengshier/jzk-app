@@ -1,0 +1,53 @@
+name: JK temporary exception todo patch
+
+on:
+  push:
+    branches:
+      - fix/jk-business-consistency
+    paths:
+      - .github/workflows/jk-temp-exception-todo.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/jk-business-consistency
+      - name: Add receive exception todo count
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('pages/jk/business/index.vue')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+            "pending:{order:0,transfer:0,audit:0,receive:0}",
+            "pending:{order:0,transfer:0,audit:0,receive:0,exception:0}", 1)
+          text = text.replace(
+            "Number(this.pending.audit||0)+Number(this.pending.receive||0)",
+            "Number(this.pending.audit||0)+Number(this.pending.receive||0)+Number(this.pending.exception||0)", 1)
+          text = text.replace(
+            "const items=[];\n      if(this.pending.audit)",
+            "const items=[];\n      if(this.pending.exception)items.push({name:'收货异常处理中',icon:'document',count:this.pending.exception,url:'/pages/jk/receiveException/list'});\n      if(this.pending.audit)", 1)
+          text = text.replace(
+            "receive:Number(summary.pendingReceiveCount||0)};",
+            "receive:Number(summary.pendingReceiveCount||0),exception:Number(summary.receiveExceptionCount||0)};", 1)
+          text = text.replace(
+            "openAllTodo(){this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');}",
+            "openAllTodo(){if(this.pending.exception)return this.go('/pages/jk/receiveException/list');this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');}", 1)
+          required = ['exception:0', 'summary.receiveExceptionCount', '收货异常处理中']
+          missing = [x for x in required if x not in text]
+          if missing: raise SystemExit('patch incomplete: ' + ','.join(missing))
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          if git diff --quiet -- pages/jk/business/index.vue; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pages/jk/business/index.vue
+          git commit -m "feat: show receive exception pending count"
+          git push origin HEAD:fix/jk-business-consistency
