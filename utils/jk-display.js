@@ -11,9 +11,11 @@ export function jkPayStatusText(status) {
 export function jkReceiveStatusText(status) {
   const map = {
     WAIT_RECEIVE: '待收货',
+    UNRECEIVED: '待收货',
     RECEIVED: '已收货',
     STOCK_IN: '已入库',
-    PENDING: '待入库'
+    PENDING: '待入库',
+    EXCEPTION: '收货异常处理中'
   };
   return map[status] || status || '--';
 }
@@ -62,6 +64,7 @@ export function jkBusinessStatusText(status) {
     WAIT_SHIP: '待发货',
     TRANSFERRED: '已拨货',
     SHIPPED: '已发货',
+    RECEIVE_EXCEPTION: '收货异常处理中',
     RECEIVED: '已收货',
     STOCK_IN: '已入库',
     CANCELLED: '已取消',

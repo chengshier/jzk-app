@@ -4,6 +4,10 @@ export function getJkPermissionContext() {
   return request.get('jk/permission/context');
 }
 
+export function getJkBusinessSummary() {
+  return request.get('jk/business/summary');
+}
+
 export function submitJkIdentityApply(data) {
   return request.post('jk/identity/apply', data);
 }
@@ -45,6 +49,14 @@ export function getJkStockTransferDetail(id) { return request.get('jk/stock-tran
 export function submitJkStockTransferVoucher(id, data) { return request.post('jk/stock-transfer/' + id + '/voucher', data); }
 export function receiveJkStockTransfer(id, data = {}) { return request.post('jk/stock-transfer/' + id + '/receive', data); }
 
+// 订货/调拨异常收货 V1：只记录差异并阻断正常入库，后台处理后恢复待收货状态。
+export function reportJkReceiveException(data) { return request.post('jk/receive-exception/report', data); }
+export function getJkReceiveExceptionList(data) { return request.get('jk/receive-exception/list', data); }
+export function getJkReceiveExceptionDetail(id) { return request.get('jk/receive-exception/' + id); }
+export function getJkReceiveExceptionByBusiness(businessType, businessId) {
+  return request.get('jk/receive-exception/business', { businessType, businessId });
+}
+
 export function getJkHandledTransferList(data) { return request.get('jk/stock-transfer/handle/list', data); }
 export function getJkHandledTransferDetail(id) { return request.get('jk/stock-transfer/handle/detail/' + id); }
 export function auditJkHandledTransfer(data) { return request.post('jk/stock-transfer/handle/audit', data); }
@@ -52,6 +64,10 @@ export function confirmJkHandledTransferPayment(data) { return request.post('jk/
 export function confirmJkHandledTransfer(data) { return request.post('jk/stock-transfer/handle/confirm-transfer', data); }
 export function closeJkHandledTransfer(data) { return request.post('jk/stock-transfer/handle/close', data); }
 export function getJkMyStock() { return request.get('jk/stock/my'); }
+export function getJkStockSkuDetail(skuId, productId) {
+  const params = productId ? { productId } : {};
+  return request.get('jk/stock/sku/' + skuId + '/detail', params);
+}
 export function getJkMyStockFlows(data) { return request.get('jk/stock/flow/list', data); }
 
 export function getJkCommissionSummary() { return request.get('jk/commission/summary'); }
@@ -60,13 +76,19 @@ export function getJkCommissionDetail(id) { return request.get('jk/commission/de
 export function getJkFundAccount() { return request.get('jk/fund/account'); }
 export function getJkFundFlows(data) { return request.get('jk/fund/flow/list', data); }
 export function getJkWithdrawConfig() { return request.get('jk/withdraw/config'); }
+export function getJkWithdrawPayeeAccounts() { return request.get('jk/withdraw/payee-account/list'); }
+export function saveJkWithdrawPayeeAccount(data) { return request.post('jk/withdraw/payee-account/save', data); }
+export function setDefaultJkWithdrawPayeeAccount(id) { return request.post('jk/withdraw/payee-account/' + id + '/default', {}); }
+export function deleteJkWithdrawPayeeAccount(id) { return request.post('jk/withdraw/payee-account/' + id + '/delete', {}); }
 export function applyJkWithdraw(data) { return request.post('jk/withdraw/apply', data); }
 export function getJkWithdrawList(data) { return request.get('jk/withdraw/list', data); }
 export function getJkWithdrawDetail(id) { return request.get('jk/withdraw/detail/' + id); }
 
-// 团队、推广二维码与换绑
+// 团队、推广二维码、推广素材与换绑
 export function getJkTeamSummary() { return request.get('jk/team/summary'); }
+export function getJkTeamMemberDetail(userId) { return request.get('jk/team/member/' + userId); }
 export function getJkPromotionQrcode() { return request.get('jk/team/qrcode'); }
+export function getJkPromotionMaterials(data) { return request.get('jk/promotion/material/list', data); }
 export function getJkEligibleParentOptions(data) { return request.get('jk/team/relation-change/parent-options', data); }
 export function applyJkRelationChange(data) { return request.post('jk/team/relation-change/apply', data); }
 export function getJkRelationChangeList(data) { return request.get('jk/team/relation-change/list', data); }

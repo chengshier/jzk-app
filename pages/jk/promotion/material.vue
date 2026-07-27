@@ -1,9 +1,58 @@
 <template>
-  <view class="material-page"><jk-page-nav title="推广素材"/><view class="tabs"><text v-for="item in tabs" :key="item.value" :class="{active:active===item.value}" @tap="active=item.value">{{item.label}}</text></view><view class="material-content"><view v-for="(item,index) in filteredMaterials" :key="item.id" class="material-card"><image :src="item.image" mode="aspectFill" @tap="preview(item.image)"/><view class="card-body"><text>{{item.title}}</text><small>{{item.desc}}</small><view><button @tap="copyText(item)">复制文案</button><button @tap="preview(item.image)">预览素材</button></view></view></view><jk-empty v-if="!filteredMaterials.length" text="暂无推广素材"/><button class="save-btn" @tap="saveSelected">保存到相册</button><view class="api-tip"><jk-icon name="info" size="sm"/><text>当前项目没有推广素材列表接口，本页使用 image2 生成的本地素材；接入接口后可替换为后台素材。</text></view></view></view>
+  <view class="material-page">
+    <jk-page-nav title="推广素材"/>
+    <view class="tabs">
+      <text v-for="item in tabs" :key="item.value" :class="{active:active===item.value}" @tap="changeTab(item.value)">{{item.label}}</text>
+    </view>
+    <view class="material-content">
+      <view v-for="item in materials" :key="item.id" class="material-card">
+        <image v-if="item.imageUrl" class="material-image" :src="item.imageUrl" mode="aspectFill"/>
+        <view class="material-main">
+          <view class="title-row"><text>{{item.title}}</text><jk-status-tag :text="typeText(item.type)" tone="success"/></view>
+          <text class="description">{{item.description||'暂无素材说明'}}</text>
+          <view v-if="item.copyText" class="copy-box"><text>{{item.copyText}}</text></view>
+          <view class="actions">
+            <button v-if="item.copyText" class="outline-btn" @tap="copyText(item)"><jk-icon name="document" size="sm"/>复制文案</button>
+            <button v-if="item.imageUrl" class="primary-btn" @tap="saveImage(item)"><jk-icon name="promotion" size="sm"/>保存图片</button>
+          </view>
+        </view>
+      </view>
+      <jk-empty v-if="loaded&&!materials.length" text="后台暂未发布可用推广素材"/>
+      <view v-if="!loaded" class="loading-tip">素材加载中...</view>
+    </view>
+  </view>
 </template>
 <script>
-import JkPageNav from'@/components/jk/jk-page-nav.vue';import JkIcon from'@/components/jk/jk-icon.vue';import JkEmpty from'@/components/jk/jk-empty.vue';export default{components:{JkPageNav,JkIcon,JkEmpty},data(){return{active:'poster',selected:0,tabs:[{label:'文案素材',value:'copy'},{label:'商品素材',value:'product'},{label:'健康知识',value:'health'},{label:'海报素材',value:'poster'}],materials:[{id:1,type:'poster',title:'邀请您加入九州康',desc:'共享健康事业新机遇',image:'/static/jk-ui-v2/banners/promotion-banner.png',copy:'邀请您加入九州康，共享健康事业新机遇。'},{id:2,type:'health',title:'做健康事业，知识与服务并重',desc:'适用于健康知识推广',image:'/static/jk-ui-v2/banners/identity-banner.png',copy:'关注健康、管理健康、分享健康。'},{id:3,type:'product',title:'健康产品，品质生活',desc:'适用于商品与服务推广',image:'/static/jk-ui-v2/banners/gift-banner.png',copy:'精选健康产品，为家人提供更安心的日常守护。'},{id:4,type:'copy',title:'轻创业，高收益',desc:'适用于朋友圈业务邀请',image:'/static/jk-ui-v2/banners/finance-banner.png',copy:'轻量开启健康事业，积累长期服务价值。'}]}},computed:{filteredMaterials(){return this.materials.filter(x=>x.type===this.active)}},methods:{preview(url){uni.previewImage({urls:[url],current:url})},copyText(item){uni.setClipboardData({data:item.copy||item.title})},saveSelected(){const item=this.filteredMaterials[0];if(!item)return;uni.showToast({title:'本地包内素材需发布后使用下载地址保存',icon:'none'})}}};
+import JkPageNav from'@/components/jk/jk-page-nav.vue';
+import JkIcon from'@/components/jk/jk-icon.vue';
+import JkStatusTag from'@/components/jk/jk-status-tag.vue';
+import JkEmpty from'@/components/jk/jk-empty.vue';
+import{getJkPromotionMaterials}from'@/api/jk.js';
+
+export default{
+  components:{JkPageNav,JkIcon,JkStatusTag,JkEmpty},
+  data(){return{active:'',materials:[],loaded:false,tabs:[{label:'全部',value:''},{label:'文案',value:'copy'},{label:'商品',value:'product'},{label:'健康',value:'health'},{label:'海报',value:'poster'}]}},
+  onShow(){this.load()},
+  methods:{
+    load(){this.loaded=false;getJkPromotionMaterials(this.active?{type:this.active}:{}).then(res=>{const data=res.data||res||[];this.materials=Array.isArray(data)?data:(data.list||[])}).catch(()=>{this.materials=[]}).finally(()=>{this.loaded=true})},
+    changeTab(value){this.active=value;this.load()},
+    typeText(type){return{copy:'推广文案',product:'商品素材',health:'健康知识',poster:'推广海报'}[type]||'推广素材'},
+    copyText(item){uni.setClipboardData({data:item.copyText||'',success:()=>uni.showToast({title:'文案已复制'})})},
+    saveImage(item){
+      if(!item.imageUrl)return;
+      uni.showLoading({title:'保存中'});
+      uni.downloadFile({url:item.imageUrl,success:res=>{
+        if(res.statusCode!==200){uni.showToast({title:'图片下载失败',icon:'none'});return}
+        uni.saveImageToPhotosAlbum({filePath:res.tempFilePath,success:()=>uni.showToast({title:'已保存到相册'}),fail:err=>{
+          const message=String(err&&err.errMsg||'');
+          if(message.includes('auth deny')||message.includes('authorize'))uni.showModal({title:'需要相册权限',content:'请在小程序设置中开启保存到相册权限。',confirmText:'去设置',success:r=>{if(r.confirm)uni.openSetting({})}});
+          else uni.showToast({title:'保存失败',icon:'none'})
+        }})
+      },fail:()=>uni.showToast({title:'图片下载失败',icon:'none'}),complete:()=>uni.hideLoading()})
+    }
+  }
+};
 </script>
 <style scoped>
-.material-page{min-height:100vh;background:#f7f9f9}.tabs{display:flex;border-bottom:1rpx solid #edf1f0;background:#fff}.tabs text{position:relative;flex:1;padding:20rpx 0;color:#707c82;text-align:center;font-size:22rpx}.tabs text.active{color:#10b981;font-weight:700}.tabs text.active::after{position:absolute;right:30%;bottom:0;left:30%;height:4rpx;background:#10b981;content:''}.material-content{padding:18rpx 22rpx 36rpx}.material-card{margin-bottom:18rpx;overflow:hidden;border-radius:18rpx;background:#fff;box-shadow:0 7rpx 20rpx rgba(24,68,58,.04)}.material-card>image{width:100%;height:360rpx}.card-body{padding:18rpx}.card-body>text{display:block;color:#273239;font-size:26rpx;font-weight:700}.card-body>small{display:block;margin-top:7rpx;color:#869197;font-size:20rpx}.card-body>view{display:flex;gap:12rpx;margin-top:16rpx}.card-body button{flex:1;height:62rpx;margin:0;border-radius:31rpx;background:#eefaf7;color:#10a981;font-size:21rpx;line-height:62rpx}.card-body button::after{border:0}.save-btn{height:76rpx;border:2rpx solid #10b981;border-radius:38rpx;background:#fff;color:#10a981;font-size:25rpx;line-height:76rpx}.api-tip{display:flex;align-items:flex-start;gap:8rpx;margin-top:16rpx;padding:16rpx;border-radius:14rpx;background:#fff7e8;color:#8d6928;font-size:19rpx;line-height:1.55}
+.material-page{min-height:100vh;background:#f7f9f9}.tabs{display:flex;overflow-x:auto;padding:12rpx 22rpx;background:#fff;white-space:nowrap}.tabs text{position:relative;padding:15rpx 22rpx;color:#718087;font-size:22rpx}.tabs text.active{color:#10b981;font-weight:700}.tabs text.active::after{position:absolute;right:28%;bottom:0;left:28%;height:4rpx;border-radius:2rpx;background:#10b981;content:''}.material-content{padding:4rpx 22rpx 36rpx}.material-card{overflow:hidden;margin-top:18rpx;border-radius:20rpx;background:#fff;box-shadow:0 7rpx 22rpx rgba(24,68,58,.045)}.material-image{width:100%;height:290rpx;background:#eef4f2}.material-main{padding:20rpx}.title-row{display:flex;align-items:center;justify-content:space-between}.title-row>text{color:#1f2937;font-size:27rpx;font-weight:700}.description{display:block;margin-top:9rpx;color:#76838a;font-size:21rpx;line-height:1.6}.copy-box{margin-top:14rpx;padding:16rpx;border-radius:13rpx;background:#f5f9f8}.copy-box text{color:#405057;font-size:21rpx;line-height:1.7}.actions{display:flex;gap:12rpx;margin-top:17rpx}.actions button{display:flex;flex:1;align-items:center;justify-content:center;height:66rpx;margin:0;border-radius:33rpx;font-size:22rpx;line-height:66rpx}.actions button::after{border:0}.outline-btn{border:2rpx solid #10b981!important;background:#fff!important;color:#10a981!important}.primary-btn{background:#10b981!important;color:#fff!important}.loading-tip{padding:80rpx 0;color:#9aa4a9;text-align:center;font-size:22rpx}
 </style>

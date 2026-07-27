@@ -140,6 +140,8 @@
                 {"path":"team/member","style":{"navigationBarTitleText":"成员详情","navigationStyle":"custom"}},
                 {"path":"promotion/qrcode","style":{"navigationBarTitleText":"推广二维码","navigationStyle":"custom"}},
                 {"path":"promotion/material","style":{"navigationBarTitleText":"推广素材","navigationStyle":"custom"}},
+                {"path":"receiveException/list","style":{"navigationBarTitleText":"收货异常记录","navigationStyle":"custom"}},
+                {"path":"receiveException/detail","style":{"navigationBarTitleText":"收货异常详情","navigationStyle":"custom"}},
                 {"path": "report/index","style":{"navigationBarTitleText": "个人经营中心"}}]
 		}, {
 			"root": "pages/users",
