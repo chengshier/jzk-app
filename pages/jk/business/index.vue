@@ -5,13 +5,15 @@
       <view class="identity-banner">
         <view class="banner-avatar"><image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
         <view class="banner-main">
-          <view class="banner-title"><text>{{ roleName }}</text><jk-status-tag :text="context.freezeStatus?'身份冻结':'身份正常'" :tone="context.freezeStatus?'danger':'success'"/></view>
+          <view class="banner-title"><text>{{ roleName }}</text><jk-status-tag :text="identityDisabled?'身份停用':(context.freezeStatus?'身份冻结':'身份正常')" :tone="identityDisabled||context.freezeStatus?'danger':'success'"/></view>
           <text class="banner-region">{{ context.regionName || context.regionCode || '暂未绑定区域' }}</text>
           <text class="banner-valid">有效期：{{ context.expireTime ? String(context.expireTime).slice(0,10) : '长期有效' }}</text>
         </view>
         <button class="detail-btn" @tap="goStatus">身份详情 ›</button>
         <image class="banner-watermark" src="/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
       </view>
+
+      <view v-if="identityDisabled" class="disabled-tip">当前身份属于后续扩展角色，本版本不参与价格、库存、佣金和业务权限计算。</view>
 
       <view class="overview-card">
         <view class="section-head"><text class="section-title">业务数据概览</text><text class="section-link" @tap="showDataHelp">数据说明 ›</text></view>
@@ -25,17 +27,14 @@
       <view class="section-card">
         <view class="section-title">常用功能</view>
         <view class="menu-grid">
-          <view v-for="item in menus" :key="item.name" class="menu-item" @tap="goMenu(item)">
-            <jk-icon :name="item.icon" size="lg"/><text>{{ item.name }}</text>
-          </view>
+          <view v-for="item in menus" :key="item.name" class="menu-item" @tap="goMenu(item)"><jk-icon :name="item.icon" size="lg"/><text>{{ item.name }}</text></view>
         </view>
+        <jk-empty v-if="loaded&&!menus.length" :text="identityDisabled?'当前扩展身份未开放业务功能':'当前身份暂无可用功能'"/>
       </view>
 
       <view class="section-card todo-card">
         <view class="section-head"><text class="section-title">待处理事项</text><text class="section-link" @tap="openAllTodo">全部 ›</text></view>
-        <view v-for="item in todoItems" :key="item.name" class="todo-row" @tap="go(item.url)">
-          <jk-icon :name="item.icon" size="sm"/><text class="todo-name">{{ item.name }}</text><text class="todo-count">{{ item.count }}</text><text class="todo-arrow">›</text>
-        </view>
+        <view v-for="item in todoItems" :key="item.name" class="todo-row" @tap="go(item.url)"><jk-icon :name="item.icon" size="sm"/><text class="todo-name">{{ item.name }}</text><text class="todo-count">{{ item.count }}</text><text class="todo-arrow">›</text></view>
         <jk-empty v-if="loaded && !todoItems.length" text="暂无待处理事项"/>
       </view>
     </view>
@@ -57,15 +56,17 @@ import JkStatusTag from '@/components/jk/jk-status-tag.vue';
 import JkEmpty from '@/components/jk/jk-empty.vue';
 import { getJkPermissionContext, getJkBusinessSummary } from '@/api/jk.js';
 
-const ROLE={maker:'创客',partner:'合伙人',county_agent:'区县代',normal_user:'普通用户',health_advisor:'健康顾问',city_agent:'市代',province_agent:'省代'};
+const ACTIVE_ROLES={maker:'创客',partner:'合伙人',county_agent:'区县代',normal_user:'普通用户'};
 export default {
   components:{JkPageNav,JkIcon,JkStatusTag,JkEmpty},
   data(){return{context:{permissions:[]},summary:{},stockValue:'0.00',incomeValue:'0.00',stockValueBasis:'',pending:{order:0,transfer:0,audit:0,receive:0,exception:0},loaded:false};},
   computed:{
-    roleName(){return this.context.primaryRoleName||ROLE[this.context.primaryRoleCode]||'普通用户';},
-    pendingCount(){return Number(this.summary.pendingCount!==undefined?this.summary.pendingCount:(Number(this.pending.order||0)+Number(this.pending.transfer||0)+Number(this.pending.audit||0)+Number(this.pending.receive||0)+Number(this.pending.exception||0)));},
+    identityDisabled(){const code=this.context.primaryRoleCode;return !!code&&!Object.prototype.hasOwnProperty.call(ACTIVE_ROLES,code);},
+    roleName(){if(this.identityDisabled)return '扩展身份（当前停用）';return this.context.primaryRoleName||ACTIVE_ROLES[this.context.primaryRoleCode]||'普通用户';},
+    pendingCount(){if(this.identityDisabled)return 0;return Number(this.summary.pendingCount!==undefined?this.summary.pendingCount:(Number(this.pending.order||0)+Number(this.pending.transfer||0)+Number(this.pending.audit||0)+Number(this.pending.receive||0)+Number(this.pending.exception||0)));},
     defaultOrderUrl(){return this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=order':'/pages/jk/trade/list?mode=transfer';},
     menus(){
+      if(this.identityDisabled)return[];
       const role=this.context.primaryRoleCode;const items=[];
       if(this.hasPermission('stock.platform.order',role==='county_agent'))items.push({name:'平台订货',icon:'order',url:'/pages/jk/trade/list?mode=order'});
       if(this.hasPermission('stock.transfer.audit',role==='county_agent'))items.push({name:'下级调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=handleTransfer'});
@@ -79,47 +80,22 @@ export default {
       if(this.hasPermission('team.view.direct',['maker','partner','county_agent'].includes(role)))items.push({name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
       return items.slice(0,9);
     },
-    todoItems(){
-      const items=[];
-      if(this.pending.exception)items.push({name:'收货异常处理中',icon:'document',count:this.pending.exception,url:'/pages/jk/receiveException/list'});
-      if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});
-      if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});
-      if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});
-      if(this.pending.transfer)items.push({name:'待处理调拨单',icon:'transfer',count:this.pending.transfer,url:'/pages/jk/trade/list?mode=transfer'});
-      return items;
-    }
+    todoItems(){if(this.identityDisabled)return[];const items=[];if(this.pending.exception)items.push({name:'收货异常处理中',icon:'document',count:this.pending.exception,url:'/pages/jk/receiveException/list'});if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});if(this.pending.transfer)items.push({name:'待处理调拨单',icon:'transfer',count:this.pending.transfer,url:'/pages/jk/trade/list?mode=transfer'});return items;}
   },
   onShow(){this.load();},
   methods:{
-    load(){
-      this.loaded=false;
-      Promise.all([
-        getJkPermissionContext().catch(()=>({})),
-        getJkBusinessSummary().catch(()=>({}))
-      ]).then(([contextRes,summaryRes])=>{
-        const context=contextRes.data||contextRes||{};
-        const summary=summaryRes.data||summaryRes||{};
-        this.summary=summary;
-        this.context=Object.assign({permissions:[]},context,(summary.identity||{}));
-        if((!this.context.permissions||!this.context.permissions.length)&&summary.menuPermissions)this.context.permissions=summary.menuPermissions;
-        this.stockValue=this.money(summary.stockValue);
-        this.incomeValue=this.money(summary.totalCommissionAmount);
-        this.stockValueBasis=summary.stockValueBasis||'';
-        this.pending={order:Number(summary.pendingOrderCount||0),transfer:Number(summary.pendingTransferCount||0),audit:Number(summary.pendingAuditCount||0),receive:Number(summary.pendingReceiveCount||0),exception:Number(summary.receiveExceptionCount||0)};
-      }).finally(()=>{this.loaded=true;});
-    },
+    load(){this.loaded=false;Promise.all([getJkPermissionContext().catch(()=>({})),getJkBusinessSummary().catch(()=>({}))]).then(([contextRes,summaryRes])=>{const context=contextRes.data||contextRes||{};const summary=summaryRes.data||summaryRes||{};this.summary=summary;this.context=Object.assign({permissions:[]},context,(summary.identity||{}));if((!this.context.permissions||!this.context.permissions.length)&&summary.menuPermissions)this.context.permissions=summary.menuPermissions;this.stockValue=this.identityDisabled?'0.00':this.money(summary.stockValue);this.incomeValue=this.identityDisabled?'0.00':this.money(summary.totalCommissionAmount);this.stockValueBasis=summary.stockValueBasis||'';this.pending={order:Number(summary.pendingOrderCount||0),transfer:Number(summary.pendingTransferCount||0),audit:Number(summary.pendingAuditCount||0),receive:Number(summary.pendingReceiveCount||0),exception:Number(summary.receiveExceptionCount||0)};}).finally(()=>{this.loaded=true;});},
     hasPermission(code,roleFallback){const permissions=this.context.permissions||[];return permissions.length?permissions.includes(code):!!roleFallback;},
     money(v){if(v===null||v===undefined||v==='')return'0.00';const n=Number(v);return Number.isNaN(n)?String(v):n.toFixed(2);},
-    go(url){if(this.context.freezeStatus)return this.$util.Tips({title:this.context.disabledReasonText||this.context.freezeReason||'当前身份已冻结'});uni.navigateTo({url});},
-    goMenu(item){this.go(item.url);},
-    goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},
-    openAllTodo(){if(this.pending.exception)return this.go('/pages/jk/receiveException/list');this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},
-    showDataHelp(){uni.showModal({title:'数据说明',content:'库存价值由后端按CRMEB商品/SKU成本价估算，成本缺失时回退零售价；累计收益来自佣金账户；待办数量由后端按完整业务单据统计。',showCancel:false});},
+    go(url){if(this.identityDisabled)return this.$util.Tips({title:'当前扩展身份未在本版本开放'});if(this.context.freezeStatus)return this.$util.Tips({title:this.context.disabledReasonText||this.context.freezeReason||'当前身份已冻结'});uni.navigateTo({url});},
+    goMenu(item){this.go(item.url);},goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},
+    openAllTodo(){if(this.identityDisabled)return;if(this.pending.exception)return this.go('/pages/jk/receiveException/list');this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},
+    showDataHelp(){uni.showModal({title:'数据说明',content:'库存价值与累计收益均来自后端真实账户；当前版本只开放普通用户、创客、合伙人和区县代理四类前台身份。',showCancel:false});},
     switchUser(){uni.switchTab({url:'/pages/user/index'});},stay(){}
   }
 };
 </script>
 
 <style scoped>
-.business-page{min-height:100vh;padding-bottom:118rpx;background:#f7f9f9}.page-content{padding:16rpx 22rpx 28rpx}.identity-banner{position:relative;display:flex;align-items:center;height:190rpx;overflow:hidden;padding:24rpx 22rpx;border-radius:22rpx 22rpx 0 0;background:linear-gradient(135deg,#45d3b4,#74dcc5);box-sizing:border-box;color:#fff}.banner-avatar{display:flex;align-items:center;justify-content:center;width:96rpx;height:96rpx;flex-shrink:0;border:8rpx solid rgba(255,255,255,.78);border-radius:50%;background:#fff}.banner-avatar image{width:76rpx;height:76rpx}.banner-main{position:relative;z-index:2;flex:1;margin-left:18rpx}.banner-title{display:flex;align-items:center;gap:10rpx}.banner-title>text{font-size:31rpx;font-weight:700}.banner-region,.banner-valid{display:block;margin-top:8rpx;font-size:22rpx;opacity:.92}.detail-btn{position:relative;z-index:2;height:58rpx;margin:0;padding:0 18rpx;border-radius:29rpx;background:#fff;color:#10a981;font-size:22rpx;line-height:58rpx}.detail-btn::after{border:0}.banner-watermark{position:absolute;right:-42rpx;bottom:-96rpx;width:250rpx;height:250rpx;opacity:.13}.overview-card{position:relative;z-index:3;margin-top:-4rpx;padding:26rpx 24rpx 24rpx;border-radius:20rpx;background:#fff;box-shadow:0 9rpx 25rpx rgba(23,72,60,.055)}.section-head{display:flex;align-items:center;justify-content:space-between}.section-title{color:#1f2937;font-size:30rpx;font-weight:700}.section-link{color:#7f8b91;font-size:22rpx}.metric-row{display:flex;margin-top:22rpx}.metric-item{display:flex;flex:1;flex-direction:column;align-items:center;border-right:1rpx solid #e9eeee}.metric-item:last-child{border-right:0}.metric-label{color:#7d898f;font-size:21rpx}.metric-value{margin:12rpx 0 10rpx;color:#1c272d;font-size:31rpx;font-weight:700}.section-card{margin-top:20rpx;padding:24rpx;border-radius:20rpx;background:#fff;box-shadow:0 8rpx 22rpx rgba(23,72,60,.045)}.menu-grid{display:flex;flex-wrap:wrap;padding-top:20rpx}.menu-item{display:flex;width:25%;flex-direction:column;align-items:center;gap:8rpx;margin-bottom:24rpx;color:#3f4d53;font-size:22rpx}.todo-card{padding-bottom:12rpx}.todo-row{display:flex;align-items:center;min-height:72rpx;border-bottom:1rpx solid #edf1f0}.todo-row:last-child{border-bottom:0}.todo-name{flex:1;margin-left:12rpx;color:#3d4a50;font-size:24rpx}.todo-count{color:#263139;font-size:26rpx;font-weight:700}.todo-arrow{margin-left:10rpx;color:#a0aaaf;font-size:32rpx}.business-tabbar{position:fixed;z-index:60;right:0;bottom:0;left:0;display:flex;height:104rpx;padding-bottom:env(safe-area-inset-bottom);border-top:1rpx solid #edf0ef;background:#fff}.business-tabbar>view{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:4rpx;color:#808b91;font-size:20rpx}.business-tabbar .active{color:#10b981}
+.business-page{min-height:100vh;padding-bottom:118rpx;background:#f7f9f9}.page-content{padding:16rpx 22rpx 28rpx}.identity-banner{position:relative;display:flex;align-items:center;height:190rpx;overflow:hidden;padding:24rpx 22rpx;border-radius:22rpx 22rpx 0 0;background:linear-gradient(135deg,#45d3b4,#74dcc5);box-sizing:border-box;color:#fff}.banner-avatar{display:flex;align-items:center;justify-content:center;width:96rpx;height:96rpx;flex-shrink:0;border:8rpx solid rgba(255,255,255,.78);border-radius:50%;background:#fff}.banner-avatar image{width:76rpx;height:76rpx}.banner-main{position:relative;z-index:2;flex:1;margin-left:18rpx}.banner-title{display:flex;align-items:center;gap:10rpx}.banner-title>text{font-size:31rpx;font-weight:700}.banner-region,.banner-valid{display:block;margin-top:8rpx;font-size:22rpx;opacity:.92}.detail-btn{position:relative;z-index:2;height:58rpx;margin:0;padding:0 18rpx;border-radius:29rpx;background:#fff;color:#10a981;font-size:22rpx;line-height:58rpx}.detail-btn::after{border:0}.banner-watermark{position:absolute;right:-42rpx;bottom:-96rpx;width:250rpx;height:250rpx;opacity:.13}.disabled-tip{padding:20rpx 24rpx;border-radius:0 0 18rpx 18rpx;background:#fff4e5;color:#a66c13;font-size:22rpx;line-height:1.6}.overview-card{position:relative;z-index:3;margin-top:-4rpx;padding:26rpx 24rpx 24rpx;border-radius:20rpx;background:#fff;box-shadow:0 9rpx 25rpx rgba(23,72,60,.055)}.section-head{display:flex;align-items:center;justify-content:space-between}.section-title{color:#1f2937;font-size:30rpx;font-weight:700}.section-link{color:#7f8b91;font-size:22rpx}.metric-row{display:flex;margin-top:22rpx}.metric-item{display:flex;flex:1;flex-direction:column;align-items:center;border-right:1rpx solid #e9eeee}.metric-item:last-child{border-right:0}.metric-label{color:#7d898f;font-size:21rpx}.metric-value{margin:12rpx 0 10rpx;color:#1c272d;font-size:31rpx;font-weight:700}.section-card{margin-top:20rpx;padding:24rpx;border-radius:20rpx;background:#fff;box-shadow:0 8rpx 22rpx rgba(23,72,60,.045)}.menu-grid{display:flex;flex-wrap:wrap;padding-top:20rpx}.menu-item{display:flex;width:25%;flex-direction:column;align-items:center;gap:8rpx;margin-bottom:24rpx;color:#3f4d53;font-size:22rpx}.todo-card{padding-bottom:12rpx}.todo-row{display:flex;align-items:center;min-height:72rpx;border-bottom:1rpx solid #edf1f0}.todo-row:last-child{border-bottom:0}.todo-name{flex:1;margin-left:12rpx;color:#3d4a50;font-size:24rpx}.todo-count{color:#263139;font-size:26rpx;font-weight:700}.todo-arrow{margin-left:10rpx;color:#a0aaaf;font-size:32rpx}.business-tabbar{position:fixed;z-index:60;right:0;bottom:0;left:0;display:flex;height:104rpx;padding-bottom:env(safe-area-inset-bottom);border-top:1rpx solid #edf0ef;background:#fff}.business-tabbar>view{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:4rpx;color:#808b91;font-size:20rpx}.business-tabbar .active{color:#10b981}
 </style>
