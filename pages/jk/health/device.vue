@@ -1,6 +1,5 @@
 <template>
   <view class="device-page">
-    <jk-page-nav title="健康设备"/>
     <view class="page-content">
       <view class="status-card">
         <view class="status-icon">⌁</view>
@@ -28,11 +27,7 @@
 </template>
 
 <script>
-import JkPageNav from '@/components/jk/jk-page-nav.vue';
-export default {
-  components: { JkPageNav },
-  methods: { go(url) { uni.navigateTo({ url }); } }
-};
+export default { methods: { go(url) { uni.navigateTo({ url }); } } };
 </script>
 
 <style scoped>
