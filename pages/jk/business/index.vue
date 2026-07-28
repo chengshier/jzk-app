@@ -19,7 +19,7 @@
         <view class="section-head"><text class="section-title">业务数据概览</text><text class="section-link" @tap="showDataHelp">数据说明 ›</text></view>
         <view class="metric-row">
           <view class="metric-item"><text class="metric-label">库存价值(元)</text><text class="metric-value">{{ stockValue }}</text><jk-icon name="stock" size="md"/></view>
-          <view class="metric-item"><text class="metric-label">累计收益(元)</text><text class="metric-value">{{ incomeValue }}</text><jk-icon name="money" size="md"/></view>
+          <view class="metric-item"><text class="metric-label">平台佣金(元)</text><text class="metric-value">{{ incomeValue }}</text><jk-icon name="money" size="md"/></view>
           <view class="metric-item"><text class="metric-label">待处理事项</text><text class="metric-value">{{ pendingCount }}</text><jk-icon name="document" size="md"/></view>
         </view>
       </view>
@@ -67,18 +67,20 @@ export default {
     defaultOrderUrl(){return this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=order':'/pages/jk/trade/list?mode=transfer';},
     menus(){
       if(this.identityDisabled)return[];
-      const role=this.context.primaryRoleCode;const items=[];
+      const role=this.context.primaryRoleCode;const items=[];const agentRole=['maker','partner','county_agent'].includes(role);
       if(this.hasPermission('stock.platform.order',role==='county_agent'))items.push({name:'平台订货',icon:'order',url:'/pages/jk/trade/list?mode=order'});
       if(this.hasPermission('stock.transfer.audit',role==='county_agent'))items.push({name:'下级调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=handleTransfer'});
       if(this.hasPermission('stock.apply',['maker','partner'].includes(role)))items.push({name:'我的调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=transfer'});
-      if(this.hasPermission('stock.view.self',['maker','partner','county_agent'].includes(role)))items.push({name:'我的库存',icon:'stock',url:'/pages/jk/stock/index'});
-      if(this.hasPermission('stock.flow.view',['maker','partner','county_agent'].includes(role)))items.push({name:'库存流水',icon:'flow',url:'/pages/jk/stock/flow'});
-      if(['maker','partner','county_agent'].includes(role))items.push({name:'收货异常',icon:'document',url:'/pages/jk/receiveException/list'});
-      if(this.hasPermission('commission.view.self',['maker','partner','county_agent'].includes(role)))items.push({name:'收益中心',icon:'money',url:'/pages/jk/commission/index'});
-      if(this.hasPermission('fund.account.view',['maker','partner','county_agent'].includes(role)))items.push({name:'资金账户',icon:'wallet',url:'/pages/jk/fund/account'});
-      if(this.hasPermission('withdraw.apply',['maker','partner','county_agent'].includes(role)))items.push({name:'提现申请',icon:'withdraw',url:'/pages/jk/withdraw/apply'});
-      if(this.hasPermission('team.view.direct',['maker','partner','county_agent'].includes(role)))items.push({name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
-      return items.slice(0,9);
+      if(this.hasPermission('stock.view.self',agentRole))items.push({name:'我的库存',icon:'stock',url:'/pages/jk/stock/index'});
+      if(this.hasPermission('stock.apply',agentRole))items.push({name:'线下销售',icon:'order',url:'/pages/jk/trade/list?mode=offlineSale'});
+      if(this.hasPermission('stock.flow.view',agentRole))items.push({name:'库存流水',icon:'flow',url:'/pages/jk/stock/flow'});
+      if(agentRole)items.push({name:'收货异常',icon:'document',url:'/pages/jk/receiveException/list'});
+      if(this.hasPermission('commission.view.self',agentRole))items.push({name:'我的业绩',icon:'document',url:'/pages/jk/trade/list?mode=performance'});
+      if(this.hasPermission('commission.view.self',agentRole))items.push({name:'经营收益',icon:'money',url:'/pages/jk/trade/list?mode=operationProfit'});
+      if(this.hasPermission('commission.view.self',agentRole))items.push({name:'平台佣金',icon:'wallet',url:'/pages/jk/commission/index'});
+      if(this.hasPermission('withdraw.apply',agentRole))items.push({name:'提现申请',icon:'withdraw',url:'/pages/jk/withdraw/apply'});
+      if(this.hasPermission('team.view.direct',agentRole))items.push({name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
+      return items.slice(0,12);
     },
     todoItems(){if(this.identityDisabled)return[];const items=[];if(this.pending.exception)items.push({name:'收货异常处理中',icon:'document',count:this.pending.exception,url:'/pages/jk/receiveException/list'});if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});if(this.pending.transfer)items.push({name:'待处理调拨单',icon:'transfer',count:this.pending.transfer,url:'/pages/jk/trade/list?mode=transfer'});return items;}
   },
@@ -90,7 +92,7 @@ export default {
     go(url){if(this.identityDisabled)return this.$util.Tips({title:'当前扩展身份未在本版本开放'});if(this.context.freezeStatus)return this.$util.Tips({title:this.context.disabledReasonText||this.context.freezeReason||'当前身份已冻结'});uni.navigateTo({url});},
     goMenu(item){this.go(item.url);},goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},
     openAllTodo(){if(this.identityDisabled)return;if(this.pending.exception)return this.go('/pages/jk/receiveException/list');this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},
-    showDataHelp(){uni.showModal({title:'数据说明',content:'库存价值与累计收益均来自后端真实账户；当前版本只开放普通用户、创客、合伙人和区县代理四类前台身份。',showCancel:false});},
+    showDataHelp(){uni.showModal({title:'数据说明',content:'库存价值来自真实库存；业绩用于经营统计；经营收益是线下已实现毛利；平台佣金是平台另行支付并可结算提现的奖励，三者分别记账。',showCancel:false});},
     switchUser(){uni.switchTab({url:'/pages/user/index'});},stay(){}
   }
 };
