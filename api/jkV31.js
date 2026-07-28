@@ -7,6 +7,7 @@ export function getJkTeamQuota(childUserId) {
 }
 
 // 第二批：线下终端销售
+export function resolveJkOfflineCustomer(phone) { return request.get('jk/offline-sale/customer/resolve', { phone }); }
 export function createJkOfflineSale(data) { return request.post('jk/offline-sale/create', data); }
 export function getJkOfflineSaleList(params) { return request.get('jk/offline-sale/list', params); }
 export function getJkOfflineSaleDetail(id) { return request.get('jk/offline-sale/' + id); }
