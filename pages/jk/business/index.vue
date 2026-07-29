@@ -72,15 +72,18 @@ export default {
       if(this.hasPermission('stock.transfer.audit',role==='county_agent'))items.push({name:'下级调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=handleTransfer'});
       if(this.hasPermission('stock.apply',['maker','partner'].includes(role)))items.push({name:'我的调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=transfer'});
       if(this.hasPermission('stock.view.self',agentRole))items.push({name:'我的库存',icon:'stock',url:'/pages/jk/stock/index'});
+      if(this.hasPermission('stock.view.self',agentRole))items.push({name:'库存盘点',icon:'flow',url:'/pages/jk/report/index?mode=stockCheck'});
       if(this.hasPermission('stock.apply',agentRole))items.push({name:'线下销售',icon:'order',url:'/pages/jk/trade/list?mode=offlineSale'});
       if(this.hasPermission('stock.flow.view',agentRole))items.push({name:'库存流水',icon:'flow',url:'/pages/jk/stock/flow'});
       if(agentRole)items.push({name:'收货异常',icon:'document',url:'/pages/jk/receiveException/list'});
       if(this.hasPermission('commission.view.self',agentRole))items.push({name:'我的业绩',icon:'document',url:'/pages/jk/trade/list?mode=performance'});
       if(this.hasPermission('commission.view.self',agentRole))items.push({name:'经营收益',icon:'money',url:'/pages/jk/trade/list?mode=operationProfit'});
+      if(agentRole)items.push({name:'经营数据',icon:'flow',url:'/pages/jk/report/index?mode=operation'});
       if(this.hasPermission('commission.view.self',agentRole))items.push({name:'平台佣金',icon:'wallet',url:'/pages/jk/commission/index'});
       if(this.hasPermission('withdraw.apply',agentRole))items.push({name:'提现申请',icon:'withdraw',url:'/pages/jk/withdraw/apply'});
       if(this.hasPermission('team.view.direct',agentRole))items.push({name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
-      return items.slice(0,12);
+      if(this.hasPermission('team.view.direct',agentRole))items.push({name:'真实推广码',icon:'promotion',url:'/pages/jk/promotion/qrcode'});
+      return items.slice(0,16);
     },
     todoItems(){if(this.identityDisabled)return[];const items=[];if(this.pending.exception)items.push({name:'收货异常处理中',icon:'document',count:this.pending.exception,url:'/pages/jk/receiveException/list'});if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});if(this.pending.transfer)items.push({name:'待处理调拨单',icon:'transfer',count:this.pending.transfer,url:'/pages/jk/trade/list?mode=transfer'});return items;}
   },
