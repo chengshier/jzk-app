@@ -1,4 +1,15 @@
 <script>
+import { recordJkPromotionOpen } from '@/api/jkPromotionEffect.js';
+
+function recordJkPromotionEntry(options) {
+  const query = (options && options.query) || {};
+  const raw = query.sceneCode || query.scene || (options && options.referrerInfo && options.referrerInfo.extraData && options.referrerInfo.extraData.sceneCode);
+  if (!raw) return;
+  let sceneCode = String(raw);
+  try { sceneCode = decodeURIComponent(sceneCode); } catch (e) {}
+  recordJkPromotionOpen({ sceneCode, requestNo: 'PROMOTION-OPEN-' + Date.now(), entryPage: options && options.path ? options.path : '', channel: 'MINI_PROGRAM' }).catch(() => {});
+}
+
 	import {
 		checkLogin
 	} from "./libs/login";
@@ -43,6 +54,7 @@
 			mobileLoginLogo: uni.getStorageSync('mobileLoginLogo') || `${Cache.get("imgHost")}crmebimage/perset/staticImg/logo2.png` //登录页logo
 		},
 		onLaunch: function(option) {
+			recordJkPromotionEntry(option);
 			//获取登录配置
 			this.getLoginConfig();
 
