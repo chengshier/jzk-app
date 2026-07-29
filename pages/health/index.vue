@@ -56,7 +56,7 @@ export default{
   data(){return{dashboard:{},permissions:[],recordActions:[{name:'记录血糖',icon:'糖',url:'/pages/jk/health/glucose'},{name:'记录饮食',icon:'食',url:'/pages/jk/health/diet'},{name:'记录运动',icon:'动',url:'/pages/jk/health/exercise'},{name:'记录用药',icon:'药',url:'/pages/jk/health/medicine'}]}},
   computed:{
     canViewAuthorized(){return this.permissions.indexOf('health.data.view.authorized')>-1;},
-    manageActions(){const items=[{name:'血糖趋势',icon:'趋',url:'/pages/jk/health/trend'},{name:'异常提醒',icon:'醒',url:'/pages/jk/health/alerts'},{name:'健康档案',icon:'档',url:'/pages/jk/health/profile'},{name:'授权管理',icon:'权',url:'/pages/jk/health/authorization'},{name:'设备接入',icon:'备',url:'/pages/jk/health/device'}];if(this.canViewAuthorized)items.push({name:'授权用户',icon:'访',url:'/pages/jk/health/authorizedOwners'});return items;},
+    manageActions(){const items=[{name:'血糖趋势',icon:'趋',url:'/pages/jk/health/trend'},{name:'健康报告',icon:'报',url:'/pages/jk/report/index?mode=healthReport'},{name:'异常提醒',icon:'醒',url:'/pages/jk/health/alerts'},{name:'健康档案',icon:'档',url:'/pages/jk/health/profile'},{name:'授权管理',icon:'权',url:'/pages/jk/health/authorization'},{name:'设备接入',icon:'备',url:'/pages/jk/health/device'}];if(this.canViewAuthorized)items.push({name:'授权用户',icon:'访',url:'/pages/jk/health/authorizedOwners'});return items;},
     latestGlucoseRiskText(){return(this.dashboard.latestGlucose&&this.dashboard.latestGlucose.riskLevelText)||'正常';},
     recentRecords(){return this.dashboard.recentRecords||[];},
     riskClass(){const level=this.dashboard.latestGlucose&&this.dashboard.latestGlucose.riskLevel;return level==='HIGH'?'high':(level==='MEDIUM'?'medium':'normal');}
