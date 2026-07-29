@@ -1,0 +1,52 @@
+name: jk-v31-e-wire-promotion-open
+on:
+  push:
+    branches: [feat/jzk-v3.1-phase3-operations]
+    paths: ['.github/workflows/jk-v31-e-wire-promotion-open.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/jzk-v3.1-phase3-operations
+          fetch-depth: 0
+      - name: Wire promotion entry tracking into App launch
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('App.vue')
+          s=p.read_text(encoding='utf-8')
+          script=s.find('<script>')
+          if script < 0: raise SystemExit('App.vue script block missing')
+          import_line="\nimport { recordJkPromotionOpen } from '@/api/jkPromotionEffect.js';\n\nfunction recordJkPromotionEntry(options) {\n  const query = (options && options.query) || {};\n  const raw = query.sceneCode || query.scene || (options && options.referrerInfo && options.referrerInfo.extraData && options.referrerInfo.extraData.sceneCode);\n  if (!raw) return;\n  let sceneCode = String(raw);\n  try { sceneCode = decodeURIComponent(sceneCode); } catch (e) {}\n  recordJkPromotionOpen({ sceneCode, requestNo: 'PROMOTION-OPEN-' + Date.now(), entryPage: options && options.path ? options.path : '', channel: 'MINI_PROGRAM' }).catch(() => {});\n}\n"
+          if "@/api/jkPromotionEffect.js" not in s:
+              pos=script+len('<script>')
+              s=s[:pos]+import_line+s[pos:]
+          patterns=[r'onLaunch\s*:\s*function\s*\(([^)]*)\)\s*\{',r'onLaunch\s*\(([^)]*)\)\s*\{']
+          matched=None
+          for pattern in patterns:
+              matched=re.search(pattern,s)
+              if matched: break
+          if not matched: raise SystemExit('onLaunch lifecycle not found')
+          param=(matched.group(1) or 'options').strip() or 'options'
+          call='\n\t\t\trecordJkPromotionEntry(%s);' % param
+          insert_at=matched.end()
+          if 'recordJkPromotionEntry(' not in s[insert_at:insert_at+220]:
+              s=s[:insert_at]+call+s[insert_at:]
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit and remove workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/jk-v31-e-wire-promotion-open.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add App.vue .github/workflows/jk-v31-e-wire-promotion-open.yml
+          git commit -m 'feat(jzk-v3.1-e): 小程序启动记录推广场景打开事件'
+          git push origin HEAD:feat/jzk-v3.1-phase3-operations
