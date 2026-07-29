@@ -38,3 +38,6 @@ export function getJkHealthReportDetail(id) { return request.get('jk/health/repo
 
 // 第三批：真实微信小程序码
 export function generateJkPromotionCode(sceneCode, requestNo) { return request.get('jk/promotion-code/generate', { sceneCode, requestNo }); }
+
+// 第三批：小程序订阅消息主动授权配置；scene 仅支持 BUSINESS / WITHDRAW。
+export function getJkSubscriptionConfig(scene) { return request.get('jk/subscription/config', { scene: scene || 'BUSINESS' }); }
