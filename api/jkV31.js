@@ -1,5 +1,10 @@
 import request from '@/utils/request.js';
 
+// V3.1 补漏：普通用户个人资料标准区域，不要求代理身份。
+export function getJkProfileRegion() { return request.get('jk/user-profile/region'); }
+export function saveJkProfileRegion(data) { return request.post('jk/user-profile/region', data); }
+export function getJkRegionOptions(params) { return request.get('jk/region/options', params || {}); }
+
 // 第一批：直属下级人数额度
 export function getJkTeamQuota(childUserId) {
   const params = childUserId ? { childUserId } : {};
