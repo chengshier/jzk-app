@@ -25,6 +25,13 @@
 							</picker>
 						</view>
 					</view>
+					<view class='item jk-standard-region'>
+						<view class='name'>标准区县</view>
+						<view class="jk-standard-region__picker">
+							<jk-region-picker v-model="jkRegionCode" @change="onJkAddressRegionChange" />
+							<view class="jk-standard-region__hint">用于本单区域归属兜底，不会覆盖个人资料的所在地区。</view>
+						</view>
+					</view>
 					<view class='item acea-row row-between-wrapper relative'>
 						<view class='name'>详细地址</view>
 						<input type='text' placeholder='请填写具体地址' placeholder-style="color:#ccc;" name='detail'
@@ -72,10 +79,12 @@
 		Debounce
 	} from '@/utils/validate.js'
 	import atModel from '@/components/accredit/index.vue';
+	import JkRegionPicker from '@/components/jk-region-picker/index.vue';
 	let app = getApp();
 	export default {
 		components: {
-			atModel
+			atModel,
+			JkRegionPicker
 		},
 		data() {
 			return {
@@ -92,6 +101,7 @@
 				multiArray: [],
 				multiIndex: [0, 0, 0],
 				cityId: 0,
+				jkRegionCode: '',
 				bargain: false, //是否是砍价
 				combination: false, //是否是拼团
 				secKill: false, //是否是秒杀
@@ -139,6 +149,9 @@
 			}
 		},
 		methods: {
+			onJkAddressRegionChange(region) {
+				this.jkRegionCode = region.regionCode;
+			},
 			// #ifdef APP-PLUS
 			// 获取选择的地区
 			handleGetRegion(region) {
@@ -153,7 +166,8 @@
 						let region = [res.data.province, res.data.city, res.data.district];
 						that.$set(that, 'userAddress', res.data);
 						that.$set(that, 'region', region);
-						that.city_id = res.data.cityId;
+						that.cityId = res.data.cityId;
+						that.jkRegionCode = res.data.jkRegionCode || '';
 					}
 				});
 			},
@@ -448,6 +462,7 @@
 					cityId: that.cityId,
 				};
 				value.isDefault = that.userAddress.isDefault;
+				value.jkRegionCode = that.jkRegionCode || null;
 
 				uni.showLoading({
 					title: '保存中',
@@ -496,6 +511,9 @@
 </script>
 
 <style scoped lang="scss">
+	.jk-standard-region { height: auto !important; min-height: 150rpx; padding-top: 20rpx; padding-bottom: 20rpx; align-items: flex-start !important; }
+	.jk-standard-region__picker { width: 510rpx; }
+	.jk-standard-region__hint { margin-top: 12rpx; color: #8b95a1; font-size: 22rpx; line-height: 32rpx; }
 	.bg-fixed{
 		width: 100%;
 		height: 750rpx;
