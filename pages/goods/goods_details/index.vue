@@ -1140,6 +1140,7 @@
 				return this.jkTradeView && this.jkTradeView.tradeIdentity === 'county_agent' && this.jkTradeView.disabledReason === 'OUT_OF_STOCK';
 			},
 			getTradeBuildButtonClass: function() {
+				if (!this.jkTradeView || this.jkTradeView.tradeIdentity !== 'county_agent') return 'bnts bg-color-hui';
 				return this.isPlatformOrderOutOfStock() ? 'bnts bg-color-hui' : 'bnts bg-color';
 			},
 			handleTradeBuildAction: function() {
