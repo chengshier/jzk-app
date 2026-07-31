@@ -18,6 +18,16 @@ assert(source.includes('已选 {{attr.productSelect.cart_num}} 件，请选择�
 assert(!source.includes('retail-quantity-hint" v-if="showTradeBuildButton()"'), 'retail quantity hint must not render for role orders');
 
 const getTradeBuildButtonClass = extractMethod('getTradeBuildButtonClass');
+assert.strictEqual(
+  getTradeBuildButtonClass.call({ jkTradeView: { tradeIdentity: 'county_agent', disabledReason: 'OUT_OF_STOCK' }, isPlatformOrderOutOfStock: () => true }),
+  'bnts bg-color-hui',
+  'county platform order must be grey when out of stock'
+);
+assert.strictEqual(
+  getTradeBuildButtonClass.call({ jkTradeView: { tradeIdentity: 'county_agent' }, isPlatformOrderOutOfStock: () => false }),
+  'bnts bg-color',
+  'county platform order must use the primary class when available'
+);
 for (const tradeIdentity of ['maker', 'partner']) {
   assert.strictEqual(
     getTradeBuildButtonClass.call({ jkTradeView: { tradeIdentity }, isPlatformOrderOutOfStock: () => false }),
