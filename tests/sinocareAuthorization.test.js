@@ -5,14 +5,14 @@ const { startSinocareAuthorization } = require('../libs/sinocareAuthorization');
 async function testRequestsServerGeneratedAuthorizationUrlAndOpensWebView() {
   const calls = [];
   await startSinocareAuthorization({
-    prepareAuthorization: payload => {
-      calls.push(['prepare', payload]);
+    prepareAuthorization: (...args) => {
+      calls.push(['prepare', args]);
       return Promise.resolve({ data: { authorizationUrl: 'https://sinocare.example/authorize?token=safe' } });
     },
     navigateTo: options => calls.push(['navigate', options])
   });
 
-  assert.deepStrictEqual(calls[0], ['prepare', { redirectUrl: '/pages/jk/health/device' }]);
+  assert.deepStrictEqual(calls[0], ['prepare', []]);
   assert.deepStrictEqual(calls[1], ['navigate', {
     url: '/pages/users/web_page/index?webUel=' + encodeURIComponent('https://sinocare.example/authorize?token=safe') + '&title=' + encodeURIComponent('三诺CGM授权')
   }]);

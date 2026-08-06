@@ -1,11 +1,9 @@
-const HEALTH_DEVICE_REDIRECT_URL = '/pages/jk/health/device';
-
 function authorizationPayload(response) {
   return response && response.data ? response.data : (response || {});
 }
 
 function startSinocareAuthorization({ prepareAuthorization, navigateTo }) {
-  return prepareAuthorization({ redirectUrl: HEALTH_DEVICE_REDIRECT_URL }).then(response => {
+  return prepareAuthorization().then(response => {
     const authorizationUrl = authorizationPayload(response).authorizationUrl;
     if (!authorizationUrl) {
       throw new Error('授权链接未返回');

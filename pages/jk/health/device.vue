@@ -42,7 +42,7 @@ export default {
         prepareAuthorization: prepareSinocareAuthorization,
         navigateTo: uni.navigateTo
       }).catch(error => {
-        this.$util.Tips({ title: (error && error.message) || error || '暂时无法打开三诺授权页' });
+        this.$util.Tips({ title: (error && (error.message || error.msg)) || String(error || '') || '暂时无法打开三诺授权页' });
       }).finally(() => {
         this.authorizing = false;
       });
