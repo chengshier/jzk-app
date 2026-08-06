@@ -1,5 +1,9 @@
 import request from '@/utils/request.js';
 
+export function prepareSinocareAuthorization(data) {
+  return request.post('jk/health/sinocare/authorization/prepare', data);
+}
+
 export function getJkPermissionContext() {
   return request.get('jk/permission/context');
 }
