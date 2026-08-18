@@ -21,12 +21,12 @@
 			}
 		},
 		onLoad(option) {
-			if(option.webUel) this.url = option.webUel;
+			if(option.webUel) this.url = decodeURIComponent(option.webUel);
 			// 蚂蚁智能客服场景参数
 			if(option.tntInstId) this.url += `?tntInstId=${option.tntInstId}`;
 			if(option.scene) this.url += `&scene=${option.scene}`;
 			uni.setNavigationBarTitle({
-				title: option.title
+				title: option.title ? decodeURIComponent(option.title) : ''
 			})
 			try {
 				const res = uni.getSystemInfoSync();
