@@ -17,7 +17,8 @@ function testAllHealthEntrancesUseTheHealthTab() {
 function testHealthSubpagesMatchTheirSourceDirectory() {
   const pages = read('pages.json');
   ['glucose', 'diet', 'exercise', 'medicine', 'dataList', 'device', 'authorization', 'authorizedOwners', 'authorizedData', 'profile', 'trend', 'alerts']
-    .forEach(page => assert.match(pages, new RegExp('"path"\\s*:\\s*"jk/health/' + page + '"')));
+    .forEach(page => assert.match(pages, new RegExp('"path"\\s*:\\s*"health/' + page + '"')));
+  assert.match(pages, /"root"\s*:\s*"pages\/jk"/);
 }
 
 try {
