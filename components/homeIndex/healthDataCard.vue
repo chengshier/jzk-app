@@ -1,6 +1,6 @@
 <template>
 	<view class="health-data-component">
-		<view class="health-data-card" :style="[boxStyle]">
+		<view class="health-data-card" :style="[boxStyle]" @click="goHealth">
 			<view class="health-data-card__head">
 				<view class="health-data-card__head-main">
 					<text
@@ -21,7 +21,6 @@
 				<view
 					class="health-data-card__more"
 					:style="{ color: color('mutedColor', '#98a0a6') }"
-					@click="goHealth"
 				>
 					<text class="health-data-card__more-text">
 						{{ value('moreConfig', '更多数据') }}
@@ -131,7 +130,7 @@ export default {
 
 	methods: {
 		goHealth() {
-			uni.navigateTo({
+			uni.switchTab({
 				url: '/pages/health/index'
 			});
 		},

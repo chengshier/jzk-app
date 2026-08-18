@@ -190,7 +190,11 @@ menusTap(item) {
 				const info = item && item.info ? item.info : [];
 				const title = info[0] && info[0].value ? info[0].value : '';
 				const configuredUrl = info[1] && info[1].value ? info[1].value : '';
-				const url = configuredUrl || (title === '健康档案' ? '/pages/health/index' : '');
+				const url = title === '健康档案' ? '/pages/health/index' : configuredUrl;
+				if (url === '/pages/health/index') {
+					uni.switchTab({ url });
+					return;
+				}
 				if (url) this.$util.navigateTo(url);
 			}
 		}
