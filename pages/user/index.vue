@@ -21,7 +21,7 @@
       </view>
 
       <view class="page-body page-section">
-        <view class="business-guide" @tap="jkCanApplyRoles.length && !jkEntryDisabled ? goJkApply() : goJkStatus()">
+        <view v-if="jkEntryAccess" class="business-guide" @tap="jkCanApplyRoles.length && !jkEntryDisabled ? goJkApply() : goJkStatus()">
           <jk-icon name="identity" size="md"/>
           <view class="guide-main"><text>{{ jkBusinessGuide.title }}</text><small>{{ jkBusinessGuide.description }}</small></view>
           <text class="guide-arrow">›</text>
@@ -41,9 +41,9 @@
           <swiper v-if="imgUrls && imgUrls.length" indicator-dots autoplay circular :interval="interval" :duration="duration" indicator-color="rgba(255,255,255,.65)" indicator-active-color="#10B981">
             <swiper-item v-for="(item,index) in imgUrls" :key="index"><image :src="item.pic" mode="aspectFill" @tap="navito(item.url)"/></swiper-item>
           </swiper>
-          <view v-else class="default-banner" @tap="goJkApply">
+          <view v-else-if="jkEntryAccess" class="default-banner" @tap="goJkApply">
             <view class="banner-copy"><text class="banner-title">健康生活 邀请有礼</text><text class="banner-desc">邀请好友加入，双方均可获得专属奖励</text><text class="banner-btn">去邀请 ›</text></view>
-            <image src="/static/jk-ui-v2/banners/gift-banner.png" mode="aspectFill"/>
+            <image src="https://file.wit.cn/jzk/static/jk-ui-v2/banners/gift-banner.png" mode="aspectFill"/>
           </view>
         </view>
 
@@ -53,11 +53,15 @@
             <view v-for="(item,index) in MyMenus" :key="index" class="service-item" @tap="menusTap(item.url)" v-if="!(item.url =='/pages/service/index' || (item.url =='/pages/promoter/user_spread_user/index' && !userInfo.isPromoter))">
               <image :src="item.pic" mode="aspectFit"/><text>{{ item.name }}</text>
             </view>
+            <!-- 普通用户唯一的九州康入口：扫码后才开通两个业务卡片。 -->
+            <view v-if="isLogin && !jkEntryAccess" class="service-item" @tap="scanJkBusinessCode">
+              <jk-icon name="qrcode" size="lg"/><text>扫码加入九州康</text>
+            </view>
             <template v-if="jkContext && jkContext.primaryRoleCode && jkContext.primaryRoleCode !== 'normal_user'">
-              <view class="service-item" @tap="menusTap('/pages/jk/business/index')"><image src="/static/jk-ui-v2/icons/wallet.png" mode="aspectFit"/><text>业务中心</text></view>
-              <view class="service-item" @tap="menusTap('/pages/jk/team/index')"><image src="/static/jk-ui-v2/icons/team.png" mode="aspectFit"/><text>我的团队</text></view>
-              <view class="service-item" @tap="menusTap('/pages/jk/team/qrcode')"><image src="/static/jk-ui-v2/icons/qrcode.png" mode="aspectFit"/><text>推广二维码</text></view>
-              <view class="service-item" @tap="menusTap('/pages/jk/promotion/material')"><image src="/static/jk-ui-v2/icons/promotion.png" mode="aspectFit"/><text>推广素材</text></view>
+              <view class="service-item" @tap="menusTap('/pages/jk/business/index')"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/wallet.png" mode="aspectFit"/><text>业务中心</text></view>
+              <view class="service-item" @tap="menusTap('/pages/jk/team/index')"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/team.png" mode="aspectFit"/><text>我的团队</text></view>
+              <view class="service-item" @tap="menusTap('/pages/jk/team/qrcode')"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/qrcode.png" mode="aspectFit"/><text>推广二维码</text></view>
+              <view class="service-item" @tap="menusTap('/pages/jk/promotion/material')"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/promotion.png" mode="aspectFit"/><text>推广素材</text></view>
             </template>
             <!-- #ifndef MP -->
             <view class="service-item" @tap="onClickService"><image :src="servicePic" mode="aspectFit"/><text>联系客服</text></view>
@@ -70,12 +74,12 @@
           </view>
         </view>
 
-        <view v-if="isLogin" class="business-entry jk-business-entry" @tap="goJkStatus">
+        <view v-if="isLogin && jkEntryAccess" class="business-entry jk-business-entry" @tap="goJkStatus">
           <jk-icon name="wallet" size="lg"/>
           <view class="entry-main"><text class="entry-title">九州康业务中心</text><text class="entry-desc">开启业务伙伴身份，解锁更多专属功能与权益</text></view>
           <view class="entry-right"><text class="entry-status">{{ jkIdentityStatusText }}</text><text class="entry-action">{{ jkBusinessGuide.actionText }} ›</text></view>
         </view>
-        <image v-if="copyImage" :src="copyImage" class="support" mode="widthFix"/>
+        <!-- <image v-if="copyImage" :src="copyImage" class="support" mode="widthFix"/> -->
       </view>
     </view>
     <pageFooter></pageFooter>
@@ -89,7 +93,7 @@
 	import {goPage} from '@/libs/iframe.js'
 	import {BACK_URL} from '@/config/cache';
 	import {getMenuList, copyrightApi} from '@/api/user.js';
-	import { getJkPermissionContext } from '@/api/jk.js';
+	import { activateJkEntryAccess, getJkPermissionContext } from '@/api/jk.js';
 	import {orderData} from '@/api/order.js';
 	import {getCity, tokenIsExistApi} from '@/api/api.js';
 	import {toLogin} from '@/libs/login.js';
@@ -114,6 +118,7 @@
 			jkCanApplyRoles() {
 				return (this.jkContext && this.jkContext.canApplyRoles) || [];
 			},
+			jkEntryAccess() { return !!(this.jkContext && this.jkContext.entryAccess); },
 			jkPrimaryRoleName() {
 				return (this.jkContext && this.jkContext.primaryRoleName) || '普通用户';
 			},
@@ -280,11 +285,22 @@
 					this.jkContext = null;
 					return;
 				}
-				getJkPermissionContext().then(res => {
+				const pendingScene = (uni.getStorageSync('jk_promotion_context') || {});
+				const loadContext = () => getJkPermissionContext().then(res => {
 					this.jkContext = res.data || null;
 				}).catch(() => {
 					this.jkContext = null;
 				});
+				if ((pendingScene.type === 'ENTRY_ACCESS' || pendingScene.type === 'IDENTITY_PROMOTION') && pendingScene.scene) {
+					// 两类九州康码都只开通展示权限；推广关系仍由身份审核通过后创建。
+					activateJkEntryAccess(pendingScene.scene).then(() => {
+						// 推广码邀请人必须保留到身份申请提交；固定入口码则可立即清除。
+						if (pendingScene.type === 'ENTRY_ACCESS') uni.removeStorageSync('jk_promotion_context');
+						return loadContext();
+					}).catch(() => loadContext());
+					return;
+				}
+				loadContext();
 			},
 			getJkRoleName(code) {
 				const roleNameMap = (this.jkContext && this.jkContext.roleNameMap) || {};
@@ -326,6 +342,31 @@
 					url: '/pages/jk/identity/applyList'
 				});
 			},
+			scanJkBusinessCode() {
+				// #ifdef MP
+				uni.scanCode({
+					onlyFromCamera: false,
+					success: result => {
+						const raw = decodeURIComponent(String(result.result || ''));
+						const match = raw.match(/(?:scene=)?(entry:open|bind:\d+)/);
+						if (!match) return this.$util.Tips({ title: '请扫描有效的九州康业务二维码' });
+						const scene = match[1];
+						const promotionMatch = /^bind:(\d+)$/.exec(scene);
+						uni.setStorageSync('jk_promotion_context', promotionMatch
+							? { type: 'IDENTITY_PROMOTION', inviterUserId: Number(promotionMatch[1]), scene }
+							: { type: 'ENTRY_ACCESS', scene });
+						activateJkEntryAccess(scene).then(() => {
+							// 固定码不带关系；推广码只暂存邀请人，审核通过后才绑定。
+							this.loadJkPermissionContext();
+							this.$util.Tips({ title: '九州康入口已开通' });
+						}).catch(err => this.$util.Tips({ title: err || '入口开通失败' }));
+					}
+				});
+				// #endif
+				// #ifndef MP
+				this.$util.Tips({ title: '请在微信小程序内使用扫码功能' });
+				// #endif
+			},
 			//校验token是否有效,true为有效，false为无效
 			getTokenIsExist() {
 				tokenIsExistApi().then(res => {
@@ -348,7 +389,7 @@
 					if (res.data) {
 						this.copyImage = res.data.companyImage;
 					} else {
-						this.copyImage = `${this.urlDomain}crmebimage/perset/staticImg/support.png`;
+						// this.copyImage = `${this.urlDomain}crmebimage/perset/staticImg/support.png`; // 隐藏crmeb版权标志
 					}
 				}).catch(err => {
 					return this.$util.Tips({

@@ -3,14 +3,14 @@
     <jk-page-nav title="九州康业务中心" />
     <view class="page-content">
       <view class="identity-banner">
-        <view class="banner-avatar"><image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
+        <view class="banner-avatar"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
         <view class="banner-main">
           <view class="banner-title"><text>{{ roleName }}</text><jk-status-tag :text="identityDisabled?'身份停用':(context.freezeStatus?'身份冻结':'身份正常')" :tone="identityDisabled||context.freezeStatus?'danger':'success'"/></view>
           <text class="banner-region">{{ context.regionName || context.regionCode || '暂未绑定区域' }}</text>
           <text class="banner-valid">有效期：{{ context.expireTime ? String(context.expireTime).slice(0,10) : '长期有效' }}</text>
         </view>
         <button class="detail-btn" @tap="goStatus">身份详情 ›</button>
-        <image class="banner-watermark" src="/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
+        <image class="banner-watermark" src="https://file.wit.cn/jzk/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
       </view>
 
       <view v-if="identityDisabled" class="disabled-tip">当前身份属于后续扩展角色，本版本不参与价格、库存、佣金和业务权限计算。</view>
@@ -55,11 +55,12 @@ import JkIcon from '@/components/jk/jk-icon.vue';
 import JkStatusTag from '@/components/jk/jk-status-tag.vue';
 import JkEmpty from '@/components/jk/jk-empty.vue';
 import { getJkPermissionContext, getJkBusinessSummary } from '@/api/jk.js';
+import { getJkSubscriptionConfig } from '@/api/jkV31.js';
 
 const ACTIVE_ROLES={maker:'创客',partner:'合伙人',county_agent:'区县代',normal_user:'普通用户'};
 export default {
   components:{JkPageNav,JkIcon,JkStatusTag,JkEmpty},
-  data(){return{context:{permissions:[]},summary:{},stockValue:'0.00',incomeValue:'0.00',stockValueBasis:'',pending:{order:0,transfer:0,audit:0,receive:0,exception:0},loaded:false};},
+  data(){return{context:{permissions:[]},summary:{},subscriptionConfig:{ready:false,templateIds:[]},stockValue:'0.00',incomeValue:'0.00',stockValueBasis:'',pending:{order:0,transfer:0,audit:0,receive:0,exception:0},loaded:false};},
   computed:{
     identityDisabled(){const code=this.context.primaryRoleCode;return !!code&&!Object.prototype.hasOwnProperty.call(ACTIVE_ROLES,code);},
     roleName(){if(this.identityDisabled)return '扩展身份（当前停用）';return this.context.primaryRoleName||ACTIVE_ROLES[this.context.primaryRoleCode]||'普通用户';},
@@ -72,25 +73,51 @@ export default {
       if(this.hasPermission('stock.transfer.audit',role==='county_agent'))items.push({name:'下级调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=handleTransfer'});
       if(this.hasPermission('stock.apply',['maker','partner'].includes(role)))items.push({name:'我的调拨',icon:'transfer',url:'/pages/jk/trade/list?mode=transfer'});
       if(this.hasPermission('stock.view.self',agentRole))items.push({name:'我的库存',icon:'stock',url:'/pages/jk/stock/index'});
+      if(this.hasPermission('stock.view.self',agentRole))items.push({name:'库存盘点',icon:'flow',url:'/pages/jk/report/index?mode=stockCheck'});
       if(this.hasPermission('stock.apply',agentRole))items.push({name:'线下销售',icon:'order',url:'/pages/jk/trade/list?mode=offlineSale'});
       if(this.hasPermission('stock.flow.view',agentRole))items.push({name:'库存流水',icon:'flow',url:'/pages/jk/stock/flow'});
       if(agentRole)items.push({name:'收货异常',icon:'document',url:'/pages/jk/receiveException/list'});
       if(this.hasPermission('commission.view.self',agentRole))items.push({name:'我的业绩',icon:'document',url:'/pages/jk/trade/list?mode=performance'});
       if(this.hasPermission('commission.view.self',agentRole))items.push({name:'经营收益',icon:'money',url:'/pages/jk/trade/list?mode=operationProfit'});
+      if(agentRole)items.push({name:'经营数据',icon:'flow',url:'/pages/jk/report/index?mode=operation'});
       if(this.hasPermission('commission.view.self',agentRole))items.push({name:'平台佣金',icon:'wallet',url:'/pages/jk/commission/index'});
       if(this.hasPermission('withdraw.apply',agentRole))items.push({name:'提现申请',icon:'withdraw',url:'/pages/jk/withdraw/apply'});
       if(this.hasPermission('team.view.direct',agentRole))items.push({name:'我的团队',icon:'team',url:'/pages/jk/team/index'});
-      return items.slice(0,12);
+      if(this.hasPermission('team.view.direct',agentRole))items.push({name:'真实推广码',icon:'promotion',url:'/pages/jk/promotion/qrcode'});
+      items.push({name:'消息提醒',icon:'document',action:'subscribeBusiness'});
+      return items.slice(0,20);
     },
     todoItems(){if(this.identityDisabled)return[];const items=[];if(this.pending.exception)items.push({name:'收货异常处理中',icon:'document',count:this.pending.exception,url:'/pages/jk/receiveException/list'});if(this.pending.audit)items.push({name:'待审核调拨单',icon:'document',count:this.pending.audit,url:'/pages/jk/trade/list?mode=handleTransfer'});if(this.pending.receive)items.push({name:'待确认收货',icon:'stock',count:this.pending.receive,url:'/pages/jk/trade/list?mode=order'});if(this.pending.order)items.push({name:'订单待付款',icon:'wallet',count:this.pending.order,url:'/pages/jk/trade/list?mode=order'});if(this.pending.transfer)items.push({name:'待处理调拨单',icon:'transfer',count:this.pending.transfer,url:'/pages/jk/trade/list?mode=transfer'});return items;}
   },
   onShow(){this.load();},
   methods:{
-    load(){this.loaded=false;Promise.all([getJkPermissionContext().catch(()=>({})),getJkBusinessSummary().catch(()=>({}))]).then(([contextRes,summaryRes])=>{const context=contextRes.data||contextRes||{};const summary=summaryRes.data||summaryRes||{};this.summary=summary;this.context=Object.assign({permissions:[]},context,(summary.identity||{}));if((!this.context.permissions||!this.context.permissions.length)&&summary.menuPermissions)this.context.permissions=summary.menuPermissions;this.stockValue=this.identityDisabled?'0.00':this.money(summary.stockValue);this.incomeValue=this.identityDisabled?'0.00':this.money(summary.totalCommissionAmount);this.stockValueBasis=summary.stockValueBasis||'';this.pending={order:Number(summary.pendingOrderCount||0),transfer:Number(summary.pendingTransferCount||0),audit:Number(summary.pendingAuditCount||0),receive:Number(summary.pendingReceiveCount||0),exception:Number(summary.receiveExceptionCount||0)};}).finally(()=>{this.loaded=true;});},
+    load(){this.loaded=false;Promise.all([getJkPermissionContext().catch(()=>({})),getJkBusinessSummary().catch(()=>({})),getJkSubscriptionConfig('BUSINESS').catch(()=>({}))]).then(([contextRes,summaryRes,subscriptionRes])=>{const context=contextRes.data||contextRes||{};const summary=summaryRes.data||summaryRes||{};this.subscriptionConfig=subscriptionRes.data||subscriptionRes||{ready:false,templateIds:[]};this.summary=summary;this.context=Object.assign({permissions:[]},context,(summary.identity||{}));if((!this.context.permissions||!this.context.permissions.length)&&summary.menuPermissions)this.context.permissions=summary.menuPermissions;this.stockValue=this.identityDisabled?'0.00':this.money(summary.stockValue);this.incomeValue=this.identityDisabled?'0.00':this.money(summary.totalCommissionAmount);this.stockValueBasis=summary.stockValueBasis||'';this.pending={order:Number(summary.pendingOrderCount||0),transfer:Number(summary.pendingTransferCount||0),audit:Number(summary.pendingAuditCount||0),receive:Number(summary.pendingReceiveCount||0),exception:Number(summary.receiveExceptionCount||0)};}).finally(()=>{this.loaded=true;});},
     hasPermission(code,roleFallback){const permissions=this.context.permissions||[];return permissions.length?permissions.includes(code):!!roleFallback;},
     money(v){if(v===null||v===undefined||v==='')return'0.00';const n=Number(v);return Number.isNaN(n)?String(v):n.toFixed(2);},
     go(url){if(this.identityDisabled)return this.$util.Tips({title:'当前扩展身份未在本版本开放'});if(this.context.freezeStatus)return this.$util.Tips({title:this.context.disabledReasonText||this.context.freezeReason||'当前身份已冻结'});uni.navigateTo({url});},
-    goMenu(item){this.go(item.url);},goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},
+    goMenu(item){if(item.action&&typeof this[item.action]==='function')return this[item.action]();this.go(item.url);},
+    goStatus(){uni.navigateTo({url:'/pages/jk/identity/status'});},
+    subscribeBusiness(){
+      const config=this.subscriptionConfig||{};const ids=(config.templateIds||[]).filter(Boolean).slice(0,3);
+      if(!config.ready||!ids.length)return uni.showModal({title:'消息提醒暂未开放',content:config.message||'微信订阅模板尚未配置，请稍后再试。',showCancel:false});
+      this.requestWechatSubscribe(ids).then(result=>{
+        if(!result)return;
+        const accepted=ids.filter(id=>result[id]==='accept').length;
+        const content=accepted?`已允许 ${accepted} 类业务提醒。微信订阅为一次性授权，后续可能需要再次确认。`:'本次未允许消息提醒，业务办理不受影响。';
+        uni.showModal({title:accepted?'授权完成':'未开启提醒',content,showCancel:false});
+      });
+    },
+    requestWechatSubscribe(ids){
+      return new Promise(resolve=>{
+        // #ifdef MP-WEIXIN
+        if(typeof wx==='undefined'||typeof wx.requestSubscribeMessage!=='function')return resolve(null);
+        wx.requestSubscribeMessage({tmplIds:ids,success:resolve,fail:error=>{console.warn('订阅消息授权失败',error);resolve(null);}});
+        // #endif
+        // #ifndef MP-WEIXIN
+        uni.showToast({title:'请在微信小程序中授权',icon:'none'});resolve(null);
+        // #endif
+      });
+    },
     openAllTodo(){if(this.identityDisabled)return;if(this.pending.exception)return this.go('/pages/jk/receiveException/list');this.go(this.context.primaryRoleCode==='county_agent'?'/pages/jk/trade/list?mode=handleTransfer':'/pages/jk/trade/list?mode=transfer');},
     showDataHelp(){uni.showModal({title:'数据说明',content:'库存价值来自真实库存；业绩用于经营统计；经营收益是线下已实现毛利；平台佣金是平台另行支付并可结算提现的奖励，三者分别记账。',showCancel:false});},
     switchUser(){uni.switchTab({url:'/pages/user/index'});},stay(){}

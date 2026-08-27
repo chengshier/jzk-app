@@ -77,6 +77,11 @@
 						</navigator>
 					</view>
 					<!-- #endif -->
+					<view class='item jk-region-item'>
+						<view class="jk-region-title">所在地区</view>
+						<jk-region-picker v-model="jkProfileRegionCode" :label="jkProfileRegionName" @change="onJkProfileRegionChange" />
+						<view class="jk-region-notice">所在地区用于后续九州康业务归属判断；实际配送仍以每笔订单选择的收货地址为准。修改后不影响历史订单。</view>
+					</view>
 					<view class='item acea-row row-between-wrapper'>
 						<view>地址管理</view>
 						<view class="input" @click="toAddress">
@@ -114,9 +119,12 @@
 	import {
 		Debounce
 	} from '@/utils/validate.js'
+	import JkRegionPicker from '@/components/jk-region-picker/index.vue';
+	import { getJkProfileRegion, saveJkProfileRegion } from '@/api/jkV31.js';
 	import dayjs from "@/plugin/dayjs/dayjs.min.js";
 	let app = getApp();
 	export default {
+		components: { JkRegionPicker },
 		data() {
 			return {
 				urlDomain: this.$Cache.get("imgHost"),
@@ -128,7 +136,9 @@
 				wechat: false,
 				theme: app.globalData.theme,
 				editPng: `${this.$Cache.get("imgHost")}crmebimage/perset/staticImg/alert1.png`,
-				publicLoginType: app.globalData.publicLoginType //公众号登录方式(单选),1微信授权，2手机号登录
+				publicLoginType: app.globalData.publicLoginType, //公众号登录方式(单选),1微信授权，2手机号登录
+				jkProfileRegionCode: '',
+				jkProfileRegionName: ''
 			};
 		},
 		computed: mapGetters(['isLogin', 'uid', 'userInfo']),
@@ -138,6 +148,7 @@
 			}
 			this.newAvatar = this.userInfo.avatar ? this.userInfo.avatar : `${this.$Cache.get("imgHost")}crmebimage/perset/staticImg/f.png`;
 			this.nickname = this.userInfo.nickname ? this.userInfo.nickname : '-';
+			this.loadJkProfileRegion();
 			// #ifdef H5
 			let ua = navigator.userAgent.toLowerCase();
 			if (ua.match(/MicroMessenger/i) == "micromessenger") {
@@ -165,6 +176,17 @@
 			}
 		},
 		methods: {
+			loadJkProfileRegion() {
+				getJkProfileRegion().then(res => {
+					const data = res.data || {};
+					this.jkProfileRegionCode = data.regionCode || '';
+					this.jkProfileRegionName = data.regionPathName || data.regionName || '';
+				}).catch(() => {});
+			},
+			onJkProfileRegionChange(region) {
+				this.jkProfileRegionCode = region.regionCode;
+				this.jkProfileRegionName = region.pathName;
+			},
 			//to地址
 			toAddress(){
 				uni.navigateTo({
@@ -263,7 +285,14 @@
 					title: '用户姓名不能为空'
 				});
 				value.avatar = that.newAvatar ? that.newAvatar : that.userInfo.avatar;
-				userEdit(value).then(res => {
+				const tasks = [userEdit(value)];
+				if (that.jkProfileRegionCode) {
+					tasks.push(saveJkProfileRegion({
+						regionCode: that.jkProfileRegionCode,
+						requestNo: 'PROFILE-' + Date.now()
+					}));
+				}
+				Promise.all(tasks).then(res => {
 					that.$store.commit("changInfo", {
 						amount1: 'avatar',
 						amount2: that.newAvatar
@@ -290,6 +319,14 @@
 </script>
 
 <style scoped lang="scss">
+	.jk-region-item {
+		padding: 24rpx 30rpx;
+		align-items: flex-start !important;
+		height: auto !important;
+		min-height: 150rpx;
+	}
+	.jk-region-title { margin-bottom: 18rpx; font-size: 28rpx; color: #333; }
+	.jk-region-notice { margin-top: 14rpx; font-size: 22rpx; line-height: 34rpx; color: #8b95a1; }
 	.personal-data .wrapper {
 		margin: 10rpx 0;
 		background-color: #fff;

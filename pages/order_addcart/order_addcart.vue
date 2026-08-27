@@ -14,9 +14,7 @@
 					:style="{ top: homeTop + 'rpx' }" @tap="returns">
 				</view>
 				<!-- #endif -->
-				<!-- #ifndef APP-PLUS -->
 				<view class="nav_title" :style="{ top: homeTop + 'rpx' }">购物车</view>
-				<!-- #endif -->
 				<!-- #ifdef H5 || APP-PLUS -->
 				<view class="right_select" :style="{ top: homeTop + 'rpx' }" @tap="showNav">
 					<text class="iconfont icon-gengduo2"></text>
@@ -31,11 +29,6 @@
 			</view>
 		</view>
 		<view class='shoppingCart copy-data' :style='"top:"+navH+"rpx;"' @touchstart="touchStart">
-			<view class='labelNav acea-row row-around'>
-				<view class='item'><text class='iconfont icon-xuanzhong'></text>100%正品保证</view>
-				<view class='item'><text class='iconfont icon-xuanzhong'></text>所有商品精挑细选</view>
-				<view class='item'><text class='iconfont icon-xuanzhong'></text>售后无忧</view>
-			</view>
 			<view class="borRadius14 cartBox">
 				<view
 					v-if="(cartList.valid.length === 0 && cartList.invalid.length === 0) || (cartList.valid.length > 0)"
@@ -1553,7 +1546,6 @@
 .ui11-cart-page > .cart_nav{position:relative;z-index:2;background:linear-gradient(120deg,#38c5b2,#74d9cd)}
 .ui11-cart-page > .cart_nav .nav_title,.ui11-cart-page > .cart_nav .select_nav{color:#fff}.ui11-cart-page > .cart_nav .nav_title{font-size:40rpx;font-weight:700}
 .ui11-cart-page .shoppingCart{min-height:calc(100vh - 88rpx);padding-bottom:172rpx;background:linear-gradient(180deg,#77d9ce 0,#c4eee9 206rpx,#f6f7f8 360rpx)}
-.ui11-cart-page .shoppingCart .labelNav{height:88rpx;margin:0 22rpx 18rpx;padding:0 16rpx;border-radius:0 0 28rpx 28rpx;background:rgba(255,255,255,.82);color:#17b596;font-size:24rpx}.ui11-cart-page .shoppingCart .labelNav .item{white-space:nowrap}.ui11-cart-page .shoppingCart .labelNav .iconfont{margin-right:7rpx;color:#1bc3a2}
 .ui11-cart-page .shoppingCart .cartBox{min-height:auto;margin:0 22rpx;overflow:hidden;border-radius:22rpx;background:#fff;box-shadow:0 12rpx 32rpx rgba(39,93,86,.06)}
 .ui11-cart-page .shoppingCart .cartBox>.nav{height:88rpx;padding:0 28rpx;border-bottom:1rpx solid #edf1f0;color:#34383b;font-size:30rpx;font-weight:700}.ui11-cart-page .shoppingCart .cartBox>.nav .num{color:#34383b}.ui11-cart-page .shoppingCart .cartBox>.nav .administrate{color:#20bfa0;font-size:25rpx;font-weight:400}.ui11-cart-page .shoppingCart .cartBox>.pad30{padding:0 24rpx}
 .ui11-cart-page .shoppingCart .list .item{min-height:186rpx;padding:24rpx 0;align-items:center;border-bottom:1rpx solid #eef1f1}.ui11-cart-page .shoppingCart .list .item .picTxt{flex:1;min-width:0;align-items:center}.ui11-cart-page .shoppingCart .list .item .pictrue{width:170rpx;height:170rpx;overflow:hidden;border-radius:16rpx;background:#f3f6f5}.ui11-cart-page .shoppingCart .list .item .pictrue image{width:100%;height:100%}.ui11-cart-page .shoppingCart .list .item .text{flex:1;min-width:0;height:170rpx;padding:4rpx 0 0 20rpx;box-sizing:border-box}.ui11-cart-page .shoppingCart .list .item .text .line1{color:#34383b;font-size:29rpx;font-weight:700}.ui11-cart-page .shoppingCart .list .item .text .infor{margin-top:10rpx;color:#a0a5a7;font-size:24rpx}.ui11-cart-page .shoppingCart .list .item .text .money{margin-top:24rpx;color:#ef4047;font-size:38rpx;font-weight:700}
@@ -1562,7 +1554,7 @@
 .ui11-cart-page>.footer{height:128rpx;padding:0 22rpx;border:0;box-shadow:0 -4rpx 22rpx rgba(30,64,59,.10)}.ui11-cart-page>.footer .placeOrder{width:290rpx;height:84rpx;margin-left:18rpx;border-radius:999rpx;line-height:84rpx;background:#29c8a6;font-size:36rpx;font-weight:700}
 
 /* UI1.1 cart top bar and empty state cleanup. */
-.ui11-cart-page>.cart_nav{height:148rpx!important;background:linear-gradient(135deg,#37c4b2,#7adbd0)!important}.ui11-cart-page>.cart_nav .navbarCon{height:100%;background:transparent}.ui11-cart-page>.cart_nav .select_nav{top:56rpx!important;left:22rpx;width:172rpx;height:56rpx;border-radius:32rpx;background:rgba(255,255,255,.34);box-sizing:border-box}.ui11-cart-page>.cart_nav .select_nav .px-20{padding:0 14rpx}.ui11-cart-page>.cart_nav .nav_title{top:58rpx!important;left:0;right:0;text-align:center;line-height:56rpx}.ui11-cart-page .shoppingCart{padding-top:0;background:linear-gradient(180deg,#7adbd0 0,#c8eee9 130rpx,#f6f7f8 300rpx)}.ui11-cart-page .shoppingCart .labelNav{margin-top:0;border-radius:0 0 24rpx 24rpx}.ui11-cart-page .shoppingCart .noCart{padding-bottom:80rpx}.ui11-cart-page .shoppingCart .noCart .pictrue{margin-top:110rpx}
+.ui11-cart-page>.cart_nav{height:148rpx!important;background:linear-gradient(135deg,#37c4b2,#7adbd0)!important}.ui11-cart-page>.cart_nav .navbarCon{height:100%;background:transparent}.ui11-cart-page>.cart_nav .select_nav{top:56rpx!important;left:22rpx;width:172rpx;height:56rpx;border-radius:32rpx;background:rgba(255,255,255,.34);box-sizing:border-box}.ui11-cart-page>.cart_nav .select_nav .px-20{padding:0 14rpx}.ui11-cart-page>.cart_nav .nav_title{top:58rpx!important;left:0;right:0;text-align:center;line-height:56rpx}.ui11-cart-page .shoppingCart{padding-top:0;background:linear-gradient(180deg,#7adbd0 0,#c8eee9 130rpx,#f6f7f8 300rpx)}.ui11-cart-page .shoppingCart .noCart{padding-bottom:80rpx}.ui11-cart-page .shoppingCart .noCart .pictrue{margin-top:110rpx}
 
 /* Tab page: no duplicate back or overflow capsule. */
 .ui11-cart-page>.cart_nav .select_nav{display:none!important}

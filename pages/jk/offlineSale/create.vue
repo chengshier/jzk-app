@@ -13,7 +13,7 @@
       <view class="card">
         <view class="section-head"><view class="section-title">销售商品</view><text @tap="stockVisible=true">从库存添加 ›</text></view>
         <view v-for="(item,index) in form.items" :key="item.productId+'-'+item.skuId" class="sale-item">
-          <image :src="item.image||'/static/jk-ui-v2/products/glucose-paper.png'" mode="aspectFill"/>
+          <image :src="item.image||'https://file.wit.cn/jzk/static/jk-ui-v2/products/glucose-paper.png'" mode="aspectFill"/>
           <view class="item-main"><strong>{{item.productName||('商品'+item.productId)}}</strong><small>{{item.skuCode||item.skuName||item.skuId}} · 可用 {{item.availableQty}}</small><view class="inputs"><text>数量</text><input v-model.number="item.quantity" type="number"/><text>单价</text><input v-model.number="item.unitPrice" type="digit"/></view></view>
           <text class="remove" @tap="removeItem(index)">×</text>
         </view>
@@ -34,7 +34,7 @@
     <view v-if="stockVisible" class="mask" @tap="stockVisible=false"></view>
     <view class="stock-sheet" :class="{show:stockVisible}">
       <view class="sheet-head"><strong>选择库存商品</strong><text @tap="stockVisible=false">完成</text></view>
-      <view class="stock-list"><view v-for="item in stockItems" :key="item.productId+'-'+item.skuId" class="stock-row" @tap="addStock(item)"><image :src="item.productImage||item.image||'/static/jk-ui-v2/products/glucose-paper.png'"/><view><strong>{{item.productName||('商品'+item.productId)}}</strong><small>{{item.skuCode||item.skuName||item.skuId}}</small><text>可用 {{available(item)}} · 参考价 ¥{{money(item.referencePrice||item.price)}}</text></view><span>＋</span></view></view>
+      <view class="stock-list"><view v-for="item in stockItems" :key="item.productId+'-'+item.skuId" class="stock-row" @tap="addStock(item)"><image :src="item.productImage||item.image||'https://file.wit.cn/jzk/static/jk-ui-v2/products/glucose-paper.png'"/><view><strong>{{item.productName||('商品'+item.productId)}}</strong><small>{{item.skuCode||item.skuName||item.skuId}}</small><text>可用 {{available(item)}} · 参考价 ¥{{money(item.referencePrice||item.price)}}</text></view><span>＋</span></view></view>
     </view>
   </view>
 </template>

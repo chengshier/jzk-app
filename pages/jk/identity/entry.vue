@@ -8,7 +8,7 @@
           <text class="hero-desc">选择合适的业务身份，享受专属功能与服务支持，助力业务高效开展。</text>
           <text class="hero-link" @tap="openIdentityHelp">了解更多权益 ›</text>
         </view>
-        <image class="hero-image" src="/static/jk-ui-v2/banners/identity-banner.png" mode="aspectFill" />
+        <image class="hero-image" src="https://file.wit.cn/jzk/static/jk-ui-v2/banners/identity-banner.png" mode="aspectFill" />
       </view>
 
       <view class="section-card">
@@ -47,7 +47,7 @@
 
     <jk-bottom-action>
       <button class="primary-btn" @tap="goApply">
-        <image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit" />
+        <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png" mode="aspectFit" />
         {{ canApply ? '申请新的业务身份' : actionText }}
       </button>
     </jk-bottom-action>

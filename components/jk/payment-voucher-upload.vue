@@ -6,7 +6,7 @@
       <text class="remove" @tap.stop="remove">×</text>
     </view>
     <view v-else class="pick" @tap="choose">
-      <image src="/static/jk-ui-v2/icons/document.png" mode="aspectFit" />
+      <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/document.png" mode="aspectFit" />
       <text>{{ uploading ? '正在上传…' : '点击上传付款凭证' }}</text>
       <small>支持 JPG/PNG 格式，单张不超过 10MB</small>
     </view>

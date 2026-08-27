@@ -1,0 +1,59 @@
+name: JZK V3.1 app guards
+
+on:
+  push:
+    branches: [feat/jzk-v3.1-phase3-operations]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  app-guards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+      - name: Enforce profile/shipping separation and trusted promotion events
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'saveJkProfileRegion' pages/infos/user_info/index.vue
+          grep -q 'jkRegionCode' pages/users/user_address/index.vue
+          if grep -R -n 'saveJkProfileRegion' pages/users/user_address; then
+            echo 'Shipping address must not overwrite profile region' >&2; exit 1
+          fi
+          if grep -R -n -E 'create.*BusinessRole|jk_user_business_role' pages/infos pages/users api; then
+            echo 'Normal profile region flow must not create fake business identity' >&2; exit 1
+          fi
+          grep -q 'promotion-effect/open' api/jkPromotionEffect.js
+          if grep -R -n -E 'RETAIL_COMPLETED|completedAmount|promoterUserId' api/jkPromotionEffect.js App.vue; then
+            echo 'Client must not submit trusted promotion conversion events' >&2; exit 1
+          fi
+      - name: Validate touched Vue scripts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib,re,subprocess,tempfile
+          targets=['App.vue','pages/infos/user_info/index.vue','pages/users/user_address/index.vue','components/jk-region-picker/index.vue']
+          failures=[]
+          for i,name in enumerate(targets):
+            text=pathlib.Path(name).read_text(encoding='utf-8')
+            m=re.search(r'<script[^>]*>(.*?)</script>',text,re.S)
+            if not m: continue
+            script=re.sub(r'^\s*import\s+.*?;?\s*$','',m.group(1),flags=re.M)
+            script=re.sub(r'export\s+default','const __component =',script,count=1)
+            temp=pathlib.Path(tempfile.gettempdir())/('jk-v31-app-%s.mjs'%i)
+            temp.write_text(script,encoding='utf-8')
+            r=subprocess.run(['node','--check',str(temp)],capture_output=True,text=True)
+            if r.returncode: failures.append(name+'\n'+r.stderr)
+          for api in ['api/jkV31.js','api/jkPromotionEffect.js']:
+            temp=pathlib.Path(tempfile.gettempdir())/(pathlib.Path(api).stem+'.mjs')
+            temp.write_text(pathlib.Path(api).read_text(encoding='utf-8'),encoding='utf-8')
+            r=subprocess.run(['node','--check',str(temp)],capture_output=True,text=True)
+            if r.returncode: failures.append(api+'\n'+r.stderr)
+          if failures: raise SystemExit('\n\n'.join(failures))
+          print('app guard syntax checks passed')
+          PY

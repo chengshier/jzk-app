@@ -4,7 +4,7 @@
     <view class="create-content">
       <template v-if="!isTransfer">
         <view class="steps"><view class="step active"><text>1</text><small>选择商品</small></view><view class="step-line"></view><view class="step"><text>2</text><small>确认订单</small></view><view class="step-line"></view><view class="step"><text>3</text><small>提交成功</small></view></view>
-        <view class="search-row"><image src="/static/jk-ui-v2/icons/search.png"/><input v-model="keyword" placeholder="搜索商品名称/规格/条码" @confirm="loadCatalog"/><view class="filter-btn" @tap="showFilter">筛选 <image src="/static/jk-ui-v2/icons/filter.png"/></view></view>
+        <view class="search-row"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/search.png"/><input v-model="keyword" placeholder="搜索商品名称/规格/条码" @confirm="loadCatalog"/><view class="filter-btn" @tap="showFilter">筛选 <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/filter.png"/></view></view>
         <view class="category-tabs"><text v-for="item in categories" :key="item" :class="{active:category===item}" @tap="category=item">{{ item }}</text></view>
       </template>
 
@@ -29,7 +29,7 @@
       <template v-if="isTransfer">
         <view class="form-card remark-card"><view class="form-title"><text class="title-dot"></text>备注 <small>（选填）</small></view><textarea v-model="remark" maxlength="200" placeholder="请填写备注信息，如调拨原因、用途等"/><text class="count">{{ remark.length }}/200</text></view>
         <view class="form-card upload-section"><view class="form-title"><text class="title-dot"></text>上传凭证 <small>（选填）</small></view><text class="upload-desc">如调拨需要，可上传协议、内部审批单等</text><payment-voucher-upload v-model="voucherUrl"/></view>
-        <view class="transfer-tip"><image src="/static/jk-ui-v2/icons/info.png"/><text>预计占用库存：待审核通过后冻结库存</text></view>
+        <view class="transfer-tip"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/info.png"/><text>预计占用库存：待审核通过后冻结库存</text></view>
       </template>
     </view>
 
@@ -56,7 +56,7 @@ export default {
     loadCatalog(){getJkProductCatalog(this.keyword).then(r=>{const d=r.data||r||[];this.catalog=Array.isArray(d)?d:(d.list||d.records||[]);}).catch(e=>this.$util.Tips({title:e||'商品目录加载失败'})).finally(()=>{this.loaded=true;});},
     loadReceivers(){getJkTeamSummary().then(r=>{const d=r.data||r||{};this.receiverOptions=d.directTeam||d.members||[];}).catch(()=>{this.receiverOptions=[];});},
     keyOf(item){return String(item.skuId||item.productId||((item.product||{}).id)||Math.random());},productName(item){return item.productName||(item.product&&item.product.storeName)||item.storeName||'商品已删除';},productSpec(item){return item.skuText||item.skuName||(item.product&&(item.product.skuText||item.product.skuName))||'默认规格';},
-    productImage(item){return item.productImage||item.image||(item.product&&(item.product.image||item.product.pic))||'/static/jk-ui-v2/products/glucose-paper.png';},visibleStock(item){const v=item.stock&&(item.stock.visibleQty!==undefined?item.stock.visibleQty:item.stock.availableQty);return v===null||v===undefined?'充足':v;},
+    productImage(item){return item.productImage||item.image||(item.product&&(item.product.image||item.product.pic))||'https://file.wit.cn/jzk/static/jk-ui-v2/products/glucose-paper.png';},visibleStock(item){const v=item.stock&&(item.stock.visibleQty!==undefined?item.stock.visibleQty:item.stock.availableQty);return v===null||v===undefined?'充足':v;},
     change(item,delta){const key=this.keyOf(item);let n=Number(this.quantities[key]||0)+delta;let max=item.stock&&(item.stock.visibleQty!==undefined?item.stock.visibleQty:item.stock.availableQty);if(n<0)n=0;if(max!==null&&max!==undefined&&Number(max)>=0&&n>Number(max))n=Number(max);this.$set(this.quantities,key,n);},
     submit(){if(!this.selectedCount)return this.$util.Tips({title:'请选择商品'});this.loading=true;const items=this.selected.map(x=>({productId:x.productId||((x.product||{}).id),skuId:x.skuId,quantity:Number(this.quantities[this.keyOf(x)])}));const requestNo=(this.isTransfer?'TRANSFER_':'ORDER_')+Date.now();
       if(this.isTransfer){const receiver=this.receiverOptions[this.receiverIndex]||{};const payload={requestNo,items,remark:this.remark};if(this.voucherUrl)payload.voucherUrl=this.voucherUrl;if(receiver.userId||receiver.id)payload.receiverUserId=receiver.userId||receiver.id;createJkStockTransfer(payload).then(r=>{const p=r.data||r||{};this.$util.Tips({title:'调拨申请已提交'});if(p.id)uni.redirectTo({url:'/pages/jk/trade/detail?mode=transfer&id='+p.id});else uni.navigateBack();}).catch(e=>this.$util.Tips({title:e||'提交失败'})).finally(()=>{this.loading=false;});}

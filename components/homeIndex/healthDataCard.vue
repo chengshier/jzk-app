@@ -1,30 +1,29 @@
 <template>
 	<view class="health-data-component">
-		<view class="health-data-card" :style="[boxStyle]">
+		<view class="health-data-card" :style="[boxStyle]" @click="goHealth">
 			<view class="health-data-card__head">
 				<view class="health-data-card__head-main">
 					<text
 						class="health-data-card__title"
 						:style="{ color: color('titleColor', '#19bf9b') }"
 					>
-						{{ value('titleConfig', '测试数据') }}
+						健康数据
 					</text>
 
 					<text
 						class="health-data-card__subtitle"
 						:style="{ color: color('mutedColor', '#98a0a6') }"
 					>
-						{{ value('subTitleConfig', '守护您的健康') }}
+						{{ latestTime ? '实时同步中' : '连接设备后自动同步' }}
 					</text>
 				</view>
 
 				<view
 					class="health-data-card__more"
 					:style="{ color: color('mutedColor', '#98a0a6') }"
-					@click="goHealth"
 				>
 					<text class="health-data-card__more-text">
-						{{ value('moreConfig', '更多数据') }}
+						健康中心
 					</text>
 					<text class="health-data-card__more-arrow">></text>
 				</view>
@@ -33,24 +32,24 @@
 			<view class="health-data-card__body">
 				<view class="health-data-card__metric">
 					<text class="health-data-card__label">
-						{{ value('metricLabelConfig', '今日血糖') }}
+						最新血糖
 					</text>
 
 					<view class="health-data-card__value-row">
 						<text class="health-data-card__number">
-							{{ value('glucoseConfig', '5.8') }}
+							{{ latestValue }}
 						</text>
 						<text class="health-data-card__unit">
-							{{ value('unitConfig', 'mmol/L') }}
+							{{ latestUnit }}
 						</text>
 					</view>
 
 					<view class="health-data-card__meta">
 						<text class="health-data-card__time">
-							{{ value('timeConfig', '测量时间 07:30') }}
+							{{ latestTime ? '同步时间 ' + latestTime : '暂未同步血糖数据' }}
 						</text>
 						<text class="health-data-card__status">
-							{{ value('statusConfig', '正常') }}
+							{{ latestStatus }}
 						</text>
 					</view>
 				</view>
@@ -62,16 +61,16 @@
 					>
 						<text class="health-data-card__advice-icon"></text>
 						<text>
-							{{ value('adviceTitleConfig', '健康建议') }}
+							健康建议
 						</text>
 					</view>
 
 					<text class="health-data-card__advice-name">
-						{{ value('adviceLabelConfig', '饮食建议') }}
+						{{ latestValue === '--' ? '设备同步' : '血糖监测' }}
 					</text>
 
 					<text class="health-data-card__advice-text">
-						{{ value('adviceConfig', '多吃蔬菜，少食多餐') }}
+						{{ healthAdvice }}
 					</text>
 				</view>
 			</view>
@@ -80,6 +79,8 @@
 </template>
 
 <script>
+import { getHealthDashboard } from '@/api/health.js';
+
 export default {
 	name: 'healthDataCard',
 
@@ -100,7 +101,37 @@ export default {
 		}
 	},
 
+	data() {
+		return {
+			dashboard: {}
+		};
+	},
+
+	mounted() {
+		this.loadHealthData();
+	},
+
 	computed: {
+		latestGlucose() {
+			return this.dashboard.latestGlucose || {};
+		},
+		latestValue() {
+			const value = this.latestGlucose.numericValue != null ? this.latestGlucose.numericValue : this.latestGlucose.value;
+			return value === null || value === undefined || value === '' ? '--' : value;
+		},
+		latestUnit() {
+			return this.latestGlucose.unit || 'mmol/L';
+		},
+		latestTime() {
+			const time = this.latestGlucose.measuredAt || this.latestGlucose.recordedAt || '';
+			return time ? String(time).replace('T', ' ').slice(0, 16) : '';
+		},
+		latestStatus() {
+			return this.latestGlucose.riskLevelText || this.latestGlucose.riskText || (this.latestValue === '--' ? '待同步' : '正常');
+		},
+		healthAdvice() {
+			return this.latestValue === '--' ? '暂无实时血糖数据' : '点击查看血糖趋势与健康记录';
+		},
 		boxStyle() {
 			const config = this.dataConfig || {};
 
@@ -130,8 +161,16 @@ export default {
 	},
 
 	methods: {
+		loadHealthData() {
+			getHealthDashboard().then(response => {
+				this.dashboard = response && response.data !== undefined ? response.data : (response || {});
+			}).catch(() => {
+				this.dashboard = {};
+			});
+		},
+
 		goHealth() {
-			uni.navigateTo({
+			uni.switchTab({
 				url: '/pages/health/index'
 			});
 		},

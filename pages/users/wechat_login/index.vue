@@ -14,7 +14,7 @@
 		<!-- #endif -->
 		<view class="wechat_login">
 			<view class="img acea-row row-center">
-				<image :src="mobileLoginLogo" mode="widthFix" class="image"></image>
+				<!-- <image :src="mobileLoginLogo" mode="widthFix" class="image"></image> -->
 			</view>
 			<view class="company">{{companyName}}</view>
 			<!-- #ifdef MP -->

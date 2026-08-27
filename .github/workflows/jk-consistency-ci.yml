@@ -1,12 +1,13 @@
 name: Jiuzhoukang app static CI
 
 on:
+  push:
+    branches:
+      - feat/jzk-v3.1-phase3-operations
   pull_request:
     branches:
       - master
-      - feat/jzk-v3.1-phase1-closure
       - feat/jzk-v3.1-phase2-business
-      - feat/jzk-v3.1-phase3-operations
   workflow_dispatch:
 
 concurrency:
@@ -40,33 +41,53 @@ jobs:
           if missing_routes:
               failures.append('pages.json routes missing Vue files:\n' + '\n'.join(missing_routes))
 
-          targets = list(pathlib.Path('pages/jk').rglob('*.vue')) + list(pathlib.Path('components/jk').rglob('*.vue'))
+          targets = list(pathlib.Path('pages/jk').rglob('*.vue'))
+          targets += list(pathlib.Path('components/jk').rglob('*.vue'))
+          targets += list(pathlib.Path('components/jk-region-picker').rglob('*.vue'))
+          targets += [pathlib.Path('pages/infos/user_info/index.vue'), pathlib.Path('pages/users/user_address/index.vue')]
+          targets = [path for path in targets if path.exists()]
+          static_import = re.compile(
+              r'^\s*import\s+(?:[\s\S]*?\s+from\s+)?[\'\"][^\'\"]+[\'\"]\s*;?\s*',
+              flags=re.M,
+          )
           for index, path in enumerate(targets):
               text = path.read_text(encoding='utf-8')
               match = re.search(r'<script[^>]*>(.*?)</script>', text, re.S)
               if not match:
                   continue
+              # 删除完整静态 import（包括多行命名导入），不能只删第一行留下 `} from`。
+              script = static_import.sub('', match.group(1))
+              script = re.sub(r'export\s+default', 'const __component =', script, count=1)
               temp = pathlib.Path(tempfile.gettempdir()) / ('jk-vue-check-%s.mjs' % index)
-              temp.write_text(match.group(1), encoding='utf-8')
+              temp.write_text(script, encoding='utf-8')
               result = subprocess.run(['node', '--check', str(temp)], capture_output=True, text=True)
               if result.returncode:
                   failures.append('%s:\n%s' % (path, result.stderr))
 
-          for api_path in [pathlib.Path('api/jk.js'), pathlib.Path('api/jkV31.js')]:
+          for api_path in [pathlib.Path('api/jk.js'), pathlib.Path('api/jkV31.js'), pathlib.Path('api/jkPromotionEffect.js')]:
               if not api_path.exists():
+                  failures.append('%s missing' % api_path)
                   continue
-              api_temp = pathlib.Path(tempfile.gettempdir()) / ('jk-api-check-' + api_path.stem + '.mjs')
+              api_temp = pathlib.Path(tempfile.gettempdir()) / ('%s-check.mjs' % api_path.stem)
               api_temp.write_text(api_path.read_text(encoding='utf-8'), encoding='utf-8')
               api_result = subprocess.run(['node', '--check', str(api_temp)], capture_output=True, text=True)
               if api_result.returncode:
                   failures.append('%s:\n%s' % (api_path, api_result.stderr))
           if failures:
               raise SystemExit('\n\n'.join(failures))
-          print('checked %s routes and %s Vue files' % (len(route_paths), len(targets)))
+          print('checked %s routes, %s Vue files and JZK API files' % (len(route_paths), len(targets)))
           PY
       - name: Reject fabricated business data
         run: |
           if grep -R -n "980,1020,940\|当前项目没有推广素材列表接口\|完成订单，获得佣金" pages/jk; then exit 1; fi
+      - name: Enforce profile and shipping region separation
+        run: |
+          grep -q "jkRegionCode" pages/users/user_address/index.vue
+          grep -q "saveJkProfileRegion" pages/infos/user_info/index.vue
+          if grep -R -n "saveJkProfileRegion" pages/users/user_address; then
+            echo "shipping address page must not overwrite profile region" >&2
+            exit 1
+          fi
       - name: Upload failed static-check log
         if: failure()
         uses: actions/upload-artifact@v4

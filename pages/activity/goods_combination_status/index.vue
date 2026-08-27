@@ -227,7 +227,7 @@
 				imgTop: '', //商品图base64位
 				imagePath: '', // 海报图片
 				theme:app.globalData.theme,
-				vacancyPic: require('../static/vacancy.png'),
+				vacancyPic: 'https://file.wit.cn/jzk/static/activity/static/vacancy.png',
 				tokenIsExist: app.globalData.tokenIsExist ,//登录是否失效
 				openPages: '' //分享链接
 			};
@@ -257,19 +257,19 @@
 			if(options.spread) app.globalData.spread = options.spread;
 			switch (this.theme) {
 				case 'theme1':
-					this.posterbackgd = require('../images/bargain_post1.png')  // 因为跨域不能使用网络图片，
+					this.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post1.png'  // 因为跨域不能使用网络图片，
 					break;
 				case 'theme2':
-					this.posterbackgd = require('../images/bargain_post2.png') 
+					this.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post2.png' 
 					break;
 				case 'theme3':
-					this.posterbackgd = require('../images/bargain_post3.png') 
+					this.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post3.png' 
 					break;
 				case 'theme4':
-					this.posterbackgd = require('../images/bargain_post4.png') 
+					this.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post4.png' 
 					break;
 				case 'theme5':
-					this.posterbackgd = require('../images/bargain_post5.png') 
+					this.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post5.png' 
 					break;
 			}
 			if (this.isLogin) {

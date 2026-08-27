@@ -54,7 +54,7 @@ export default {
   components: { JkPageNav, JkIcon, JkStatusTag, JkEmpty },
   data() { return { item: {}, skuId: null, productId: null, loaded: false }; },
   computed: {
-    productImage() { return this.item.productImage || this.item.image || '/static/jk-ui-v2/products/glucose-paper.png'; },
+    productImage() { return this.item.productImage || this.item.image || 'https://file.wit.cn/jzk/static/jk-ui-v2/products/glucose-paper.png'; },
     availableQty() { return Number(this.item.availableQuantity !== undefined ? this.item.availableQuantity : (this.item.availableQty || this.item.stockQuantity || 0)); },
     frozenQty() { return Number(this.item.frozenQuantity !== undefined ? this.item.frozenQuantity : (this.item.frozenQty || 0)); },
     totalQty() { return this.availableQty + this.frozenQty; },

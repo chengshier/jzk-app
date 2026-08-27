@@ -13,12 +13,12 @@
         <text class="quota-note">{{quota.full?'人数额度已满，暂不能继续绑定':(quota.warning?'人数额度即将用完，请提前联系管理员':'当前额度正常')}} · {{quota.ruleName||'默认规则'}}</text>
       </view>
       <view class="search-row">
-        <image src="/static/jk-ui-v2/icons/search.png"/>
+        <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/search.png"/>
         <input v-model="keyword" placeholder="搜索成员昵称/手机号"/>
-        <view @tap="filterRole">{{roleFilterLabel}} <image src="/static/jk-ui-v2/icons/filter.png"/></view>
+        <view @tap="filterRole">{{roleFilterLabel}} <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/filter.png"/></view>
       </view>
       <view v-for="(item,index) in filteredMembers" :key="item.id||item.userId||index" class="member-row" @tap="openMember(item)">
-        <view class="avatar"><image :src="item.userAvatar||item.avatar||'/static/jk-ui-v2/icons/user.png'" mode="aspectFill"/></view>
+        <view class="avatar"><image :src="item.userAvatar||item.avatar||'https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png'" mode="aspectFill"/></view>
         <view class="main">
           <text>{{item.userName||item.nickname||('用户'+(item.userId||''))}} <small>（{{item.roleName||item.identityName||'成员'}}）</small></text>
           <text>{{maskPhone(item.userPhone||item.phone)}}</text>

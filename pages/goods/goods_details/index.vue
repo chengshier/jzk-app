@@ -235,7 +235,7 @@
 						<view>收藏</view>
 					</view>
 					<view class="bnt acea-row skeleton-rect">
-						<form report-submit="true"><button class="bnts bg-color-hui" form-type="submit" @click.prevent="handleTradeBuildAction">{{getTradeBuildButtonText()}}</button></form>
+						<form report-submit="true"><button :class="getTradeBuildButtonClass()" form-type="submit" @click.prevent="handleTradeBuildAction">{{getTradeBuildButtonText()}}</button></form>
 					</view>
 				</block>
 				<block v-if="type === 'normal' && !showTradeBuildButton()">
@@ -252,18 +252,21 @@
 						</view>
 						<view>购物车</view>
 					</navigator>
-					<view class="bnt acea-row skeleton-rect" v-if="attr.productSelect.stock <= 0">
-						<form @submit="joinCart" report-submit="true"><button class="joinCart bnts"
-								form-type="submit">加入购物车</button></form>
-						<form report-submit="true"><button class="bnts bg-color-hui" form-type="submit">已售罄</button>
-						</form>
-					</view>
-					<view class="bnt acea-row skeleton-rect" v-else>
-						<form @submit="joinCart" report-submit="true"><button class="joinCart bnts"
-								form-type="submit">加入购物车</button></form>
-						<form @submit="goBuy" report-submit="true"><button class="buy bnts"
-								form-type="submit">立即购买</button>
-						</form>
+					<view class="retail-purchase-actions">
+						<view class="retail-quantity-hint" v-if="attr.productSelect.cart_num > 0">已选 {{attr.productSelect.cart_num}} 件，请选择购买方式</view>
+						<view class="bnt acea-row skeleton-rect" v-if="attr.productSelect.stock <= 0">
+							<form @submit="joinCart" report-submit="true"><button class="joinCart bnts"
+									form-type="submit">加入购物车</button></form>
+							<form report-submit="true"><button class="bnts bg-color-hui" form-type="submit">已售罄</button>
+							</form>
+						</view>
+						<view class="bnt acea-row skeleton-rect" v-else>
+							<form @submit="joinCart" report-submit="true"><button class="joinCart bnts"
+									form-type="submit">加入购物车</button></form>
+							<form @submit="goBuy" report-submit="true"><button class="buy bnts"
+									form-type="submit">立即购买</button>
+							</form>
+						</view>
 					</view>
 				</block>
 				<view class="bnt bntVideo acea-row skeleton-rect"
@@ -1133,8 +1136,16 @@
 				if (this.jkTradeView.tradeIdentity === 'maker' || this.jkTradeView.tradeIdentity === 'partner') return '申请调拨';
 				return '功能建设中';
 			},
+			isPlatformOrderOutOfStock: function() {
+				return this.jkTradeView && this.jkTradeView.tradeIdentity === 'county_agent' && this.jkTradeView.disabledReason === 'OUT_OF_STOCK';
+			},
+			getTradeBuildButtonClass: function() {
+				if (!this.jkTradeView || this.jkTradeView.tradeIdentity !== 'county_agent') return 'bnts bg-color-hui';
+				return this.isPlatformOrderOutOfStock() ? 'bnts bg-color-hui' : 'bnts bg-color';
+			},
 			handleTradeBuildAction: function() {
-                if (!this.jkTradeView || this.jkTradeView.disabledReason) return this.$util.Tips({ title: (this.jkTradeView && this.jkTradeView.disabledReason) || '当前不可操作' });
+				if (this.isPlatformOrderOutOfStock()) return this.$util.Tips({ title: '当前商品暂无库存' });
+				if (!this.jkTradeView || this.jkTradeView.disabledReason) return this.$util.Tips({ title: (this.jkTradeView && this.jkTradeView.disabledReason) || '当前不可操作' });
                 const mode = this.jkTradeView.tradeIdentity === 'county_agent' ? 'order' : 'transfer';
                 const productName = encodeURIComponent(this.productInfo.storeName || '');
                 const skuName = encodeURIComponent(this.attrValue || (this.attr && this.attr.productSelect && this.attr.productSelect.suk) || '');
@@ -2713,4 +2724,5 @@
 
 /* Ensure product action labels remain readable across theme styles. */
 .ui11-detail-page .product-con .footer .bnt button.bnts{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif!important;font-size:32rpx!important;font-weight:700!important;letter-spacing:1rpx!important;text-shadow:none!important}.ui11-detail-page .product-con .footer .bnt button.joinCart{color:#087f68!important;background:#d7f5ed!important}.ui11-detail-page .product-con .footer .bnt button.buy{color:#fff!important;background:#20c6a4!important}.ui11-detail-page .product-con .footer .bnt button.bnts:after{border:0!important}
+.ui11-detail-page .product-con .footer .retail-purchase-actions{position:relative;display:flex;flex:1;align-self:stretch;align-items:flex-end}.ui11-detail-page .product-con .footer .retail-purchase-actions .bnt{flex:1}.ui11-detail-page .product-con .footer .retail-quantity-hint{position:absolute;right:0;bottom:96rpx;z-index:1;padding:8rpx 16rpx;border-radius:99rpx;color:#0e9f80;font-size:21rpx;line-height:1.35;background:#effbf7;box-shadow:0 4rpx 14rpx rgba(31,190,157,.12);white-space:nowrap}
 </style>

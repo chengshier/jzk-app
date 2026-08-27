@@ -34,7 +34,7 @@
           <view @tap="go('/pages/jk/trade/list?mode=offlineSale')"><jk-icon name="order" size="lg"/><text>线下销售</text></view>
         </view>
       </view>
-      <view class="safe-tip"><image src="/static/jk-ui-v2/icons/identity.png"/><text>页面仅展示后端真实账户、业绩和经营数据</text></view>
+      <view class="safe-tip"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/identity.png"/><text>页面仅展示后端真实账户、业绩和经营数据</text></view>
     </view>
   </view>
 </template>

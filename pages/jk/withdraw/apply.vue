@@ -4,7 +4,7 @@
     <view class="withdraw-content">
       <view class="available-card">
         <view><text>可用金额（元）</text><strong>{{money(account.availableAmount)}}</strong><small>总余额 {{money(totalBalance)}} 元 ›</small></view>
-        <image src="/static/jk-ui-v2/illustrations/finance-hero.png" mode="aspectFit"/>
+        <image src="https://file.wit.cn/jzk/static/jk-ui-v2/illustrations/finance-hero.png" mode="aspectFit"/>
       </view>
 
       <view class="card amount-card">
@@ -32,7 +32,7 @@
 
       <view class="tip-card">
         <jk-icon name="clock" size="sm"/>
-        <view><text>温馨提示</text><small>提现申请提交后，预计 {{arrivalText}} 内到账；</small><small>提交后系统会保存本次收款账户快照，后续修改银行卡不会影响历史申请。</small></view>
+        <view><text>温馨提示</text><small>提现申请提交后，预计 {{arrivalText}} 内到账；</small><small>提交后系统会保存本次收款账户快照，后续修改银行卡不会影响历史申请。</small><small v-if="subscriptionConfig.ready">点击提交时可自愿订阅本次提现状态提醒，拒绝授权不影响提现。</small></view>
       </view>
 
       <button class="primary-btn" :disabled="submitting||!validForm" @tap="submit">{{submitting?'提交中...':'提交申请'}}</button>
@@ -71,10 +71,11 @@ import JkIcon from'@/components/jk/jk-icon.vue';
 import JkStatusTag from'@/components/jk/jk-status-tag.vue';
 import JkEmpty from'@/components/jk/jk-empty.vue';
 import{getJkFundAccount,getJkWithdrawConfig,getJkWithdrawPayeeAccounts,saveJkWithdrawPayeeAccount,setDefaultJkWithdrawPayeeAccount,deleteJkWithdrawPayeeAccount,applyJkWithdraw}from'@/api/jk.js';
+import{getJkSubscriptionConfig}from'@/api/jkV31.js';
 
 export default{
   components:{JkPageNav,JkIcon,JkStatusTag,JkEmpty},
-  data(){return{account:{},config:{},accounts:[],selectedId:null,amount:'',remark:'',agreed:true,submitting:false,showManager:false,showForm:false,savingAccount:false,accountForm:{id:null,accountName:'',bankName:'',bankAccount:'',setDefault:false}}},
+  data(){return{account:{},config:{},subscriptionConfig:{ready:false,templateIds:[]},accounts:[],selectedId:null,amount:'',remark:'',agreed:true,submitting:false,showManager:false,showForm:false,savingAccount:false,accountForm:{id:null,accountName:'',bankName:'',bankAccount:'',setDefault:false}}},
   computed:{
     totalBalance(){return this.account.totalAmount||Number(this.account.availableAmount||0)+Number(this.account.frozenAmount||0)+Number(this.account.withdrawingAmount||0)},
     minimumAmount(){const value=this.config.minimumAmount!==undefined?this.config.minimumAmount:(this.config.minAmount!==undefined?this.config.minAmount:this.config.minWithdrawAmount);return Number(value||0)},
@@ -87,7 +88,7 @@ export default{
   },
   onShow(){this.load()},
   methods:{
-    load(){getJkFundAccount().then(r=>this.account=r.data||r||{}).catch(()=>this.account={});getJkWithdrawConfig().then(r=>this.config=r.data||r||{}).catch(()=>this.config={});this.loadAccounts()},
+    load(){getJkFundAccount().then(r=>this.account=r.data||r||{}).catch(()=>this.account={});getJkWithdrawConfig().then(r=>this.config=r.data||r||{}).catch(()=>this.config={});getJkSubscriptionConfig('WITHDRAW').then(r=>this.subscriptionConfig=r.data||r||{ready:false,templateIds:[]}).catch(()=>this.subscriptionConfig={ready:false,templateIds:[]});this.loadAccounts()},
     loadAccounts(){return getJkWithdrawPayeeAccounts().then(r=>{this.accounts=r.data||r||[];const selected=this.accounts.find(x=>x.id===this.selectedId)||this.accounts.find(x=>x.isDefault)||this.accounts[0];this.selectedId=selected?selected.id:null}).catch(()=>{this.accounts=[];this.selectedId=null})},
     money(v){const n=Number(v||0);return Number.isNaN(n)?String(v||'0.00'):n.toFixed(2)},
     fillAll(){const available=Number(this.account.availableAmount||0);const step=this.stepAmount>0?this.stepAmount:1;this.amount=this.money(Math.floor(available/step)*step)},
@@ -97,7 +98,17 @@ export default{
     closeAccountForm(){this.showForm=false},
     saveAccount(){if(!this.validAccountForm)return this.$util.Tips({title:'请完整填写有效银行卡信息'});this.savingAccount=true;saveJkWithdrawPayeeAccount({id:this.accountForm.id||undefined,accountType:'BANK',accountName:this.accountForm.accountName,bankName:this.accountForm.bankName,bankAccount:String(this.accountForm.bankAccount).replace(/[\s-]/g,''),setDefault:this.accountForm.setDefault}).then(r=>{const saved=r.data||r||{};this.selectedId=saved.id;this.showForm=false;return this.loadAccounts()}).then(()=>uni.showToast({title:'账户已保存'})).catch(e=>this.$util.Tips({title:e||'保存失败'})).finally(()=>this.savingAccount=false)},
     accountActions(item){uni.showActionSheet({itemList:[item.isDefault?'当前已是默认账户':'设为默认账户','删除账户'],success:res=>{if(res.tapIndex===0&&!item.isDefault){setDefaultJkWithdrawPayeeAccount(item.id).then(()=>this.loadAccounts())}if(res.tapIndex===1){uni.showModal({title:'删除账户',content:'确认删除该提现账户？历史提现记录不受影响。',success:r=>{if(r.confirm)deleteJkWithdrawPayeeAccount(item.id).then(()=>this.loadAccounts())}})}}})},
-    submit(){if(!this.agreed)return this.$util.Tips({title:'请先同意提现服务协议'});if(!this.validAmount)return this.$util.Tips({title:'提现金额不符合最低金额或步进要求'});if(!this.selectedId)return this.$util.Tips({title:'请选择提现收款账户'});this.submitting=true;applyJkWithdraw({amount:String(this.amount),requestNo:'WD'+Date.now(),payeeAccountId:this.selectedId,remark:this.remark}).then(()=>{uni.showToast({title:'申请已提交'});setTimeout(()=>uni.redirectTo({url:'/pages/jk/withdraw/list'}),500)}).catch(e=>this.$util.Tips({title:e||'提现申请提交失败'})).finally(()=>this.submitting=false)}
+    submit(){if(!this.agreed)return this.$util.Tips({title:'请先同意提现服务协议'});if(!this.validAmount)return this.$util.Tips({title:'提现金额不符合最低金额或步进要求'});if(!this.selectedId)return this.$util.Tips({title:'请选择提现收款账户'});if(this.submitting)return;this.submitting=true;this.requestWithdrawSubscribe().then(()=>this.doSubmit(),()=>this.doSubmit())},
+    requestWithdrawSubscribe(){const ids=((this.subscriptionConfig&&this.subscriptionConfig.templateIds)||[]).filter(Boolean).slice(0,1);if(!this.subscriptionConfig.ready||!ids.length)return Promise.resolve(null);return new Promise(resolve=>{
+      // #ifdef MP-WEIXIN
+      if(typeof wx==='undefined'||typeof wx.requestSubscribeMessage!=='function')return resolve(null);
+      wx.requestSubscribeMessage({tmplIds:ids,success:resolve,fail:error=>{console.warn('提现订阅授权失败',error);resolve(null)}});
+      // #endif
+      // #ifndef MP-WEIXIN
+      resolve(null);
+      // #endif
+    })},
+    doSubmit(){applyJkWithdraw({amount:String(this.amount),requestNo:'WD'+Date.now(),payeeAccountId:this.selectedId,remark:this.remark}).then(()=>{uni.showToast({title:'申请已提交'});setTimeout(()=>uni.redirectTo({url:'/pages/jk/withdraw/list'}),500)}).catch(e=>this.$util.Tips({title:e||'提现申请提交失败'})).finally(()=>this.submitting=false)}
   }
 };
 </script>
