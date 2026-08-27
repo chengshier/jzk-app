@@ -3,14 +3,14 @@
     <jk-page-nav title="成员详情"/>
     <view class="member-content">
       <view class="profile-card">
-        <image class="avatar" :src="item.avatar||item.userAvatar||'/static/jk-ui-v2/icons/user.png'" mode="aspectFill"/>
+        <image class="avatar" :src="item.avatar||item.userAvatar||'https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png'" mode="aspectFill"/>
         <view class="profile-main">
           <view><text>{{item.userName||item.nickname||'团队成员'}}</text><jk-status-tag :text="item.roleName||item.identityName||'成员'" tone="success"/></view>
           <small>手机号：{{maskPhone(item.userPhone||item.phone)}}</small>
           <small>加入时间：{{formatDate(item.joinTime||item.createTime)}}</small>
           <small>所属区域：{{item.regionName||'-'}}</small>
         </view>
-        <image class="watermark" src="/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
+        <image class="watermark" src="https://file.wit.cn/jzk/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
       </view>
 
       <view class="metrics">

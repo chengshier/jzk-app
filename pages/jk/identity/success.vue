@@ -3,7 +3,7 @@
     <jk-page-nav title="申请提交成功" transparent />
     <view class="success-content">
       <view class="success-visual">
-        <view class="visual-ring"><image src="/static/jk-ui-v2/icons/success.png" mode="aspectFit" /></view>
+        <view class="visual-ring"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/success.png" mode="aspectFit" /></view>
       </view>
       <text class="success-title">申请已提交，等待审核</text>
       <text class="success-desc">我们将在 <text>1–2 个工作日</text> 内完成审核，请耐心等待。</text>
@@ -17,8 +17,8 @@
       </view>
     </view>
     <view class="bottom-buttons">
-      <button class="outline-btn" @tap="viewApplications"><image src="/static/jk-ui-v2/icons/document.png" mode="aspectFit"/>查看申请记录</button>
-      <button class="primary-btn" @tap="backToBusiness"><image src="/static/jk-ui-v2/icons/wallet.png" mode="aspectFit"/>返回业务中心</button>
+      <button class="outline-btn" @tap="viewApplications"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/document.png" mode="aspectFit"/>查看申请记录</button>
+      <button class="primary-btn" @tap="backToBusiness"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/wallet.png" mode="aspectFit"/>返回业务中心</button>
     </view>
   </view>
 </template>

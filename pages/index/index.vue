@@ -1,5 +1,5 @@
 <template>
-	<view id="home" :data-theme="theme" :style="[pageStyle]">
+	<view id="home" :data-theme="theme" :style="[pageStyle]">111
 		<tui-skeleton v-if="showSkeleton"></tui-skeleton>
 		<!-- 有网内容 -->
 		<view v-if="!errorNetwork">
@@ -101,7 +101,7 @@
 		<!-- 断网内容 -->
 		<view v-else>
 			<view class="error-network">
-				<image class="img" src="./error-network.png"></image>
+				<image class="img" src="https://file.wit.cn/jzk/static/error-network.png"></image>
 				<view class="title">网络连接断开</view>
 				<view class="con">
 					<view class="label">请检查情况：</view>

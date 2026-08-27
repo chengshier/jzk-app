@@ -3,9 +3,9 @@
     <jk-page-nav title="身份详情" />
     <view class="detail-content">
       <view class="hero-card">
-        <view class="avatar"><image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
+        <view class="avatar"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
         <view class="hero-main"><view><text class="role-name">{{ roleName }}</text><jk-status-tag :text="statusText" :tone="context.freezeStatus?'danger':'success'"/></view><text>{{ context.regionName || context.regionCode || '暂未绑定区域' }}</text><text>有效期：{{ context.expireTime ? formatDate(context.expireTime) : '长期有效' }}</text></view>
-        <image class="watermark" src="/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
+        <image class="watermark" src="https://file.wit.cn/jzk/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
       </view>
       <view class="card">
         <view class="section-title">身份信息</view>

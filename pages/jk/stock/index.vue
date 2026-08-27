@@ -8,7 +8,7 @@
         <view><text>SKU数量</text><strong>{{ skuCount }}</strong><jk-icon name="stock" size="md"/></view>
         <view><text>商品种类</text><strong>{{ productCount }}</strong><jk-icon name="wallet" size="md"/></view>
       </view>
-      <view class="search-row"><image src="/static/jk-ui-v2/icons/search.png"/><input v-model="keyword" placeholder="搜索商品名称 / SKU / 条码"/><view @tap="showFilter">筛选 <image src="/static/jk-ui-v2/icons/filter.png"/></view></view>
+      <view class="search-row"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/search.png"/><input v-model="keyword" placeholder="搜索商品名称 / SKU / 条码"/><view @tap="showFilter">筛选 <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/filter.png"/></view></view>
       <view class="tabs"><text v-for="item in filters" :key="item.value" :class="{active:activeFilter===item.value}" @tap="activeFilter=item.value">{{ item.label }}</text></view>
       <view class="stock-list">
         <view v-for="item in stockRows" :key="item.key" class="stock-row" @tap="openDetail(item.raw)">
@@ -75,7 +75,7 @@ export default {
     },
     available(item) { return Number(item.availableQuantity !== undefined ? item.availableQuantity : (item.availableQty !== undefined ? item.availableQty : (item.stockQuantity || 0))); },
     money(value) { const number = Number(value || 0); return Number.isNaN(number) ? String(value || '0.00') : number.toFixed(2); },
-    productImage(item, index) { return item.productImage || item.image || ['/static/jk-ui-v2/products/glucose-paper.png', '/static/jk-ui-v2/products/needle.png', '/static/jk-ui-v2/products/wipes.png', '/static/jk-ui-v2/products/meter.png'][index % 4]; },
+    productImage(item, index) { return item.productImage || item.image || ['https://file.wit.cn/jzk/static/jk-ui-v2/products/glucose-paper.png', 'https://file.wit.cn/jzk/static/jk-ui-v2/products/needle.png', 'https://file.wit.cn/jzk/static/jk-ui-v2/products/wipes.png', 'https://file.wit.cn/jzk/static/jk-ui-v2/products/meter.png'][index % 4]; },
     goFlow() { uni.navigateTo({ url: '/pages/jk/stock/flow' }); },
     openDetail(item) {
       if (!item.skuId) {

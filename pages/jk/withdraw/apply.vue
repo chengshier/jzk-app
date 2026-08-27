@@ -4,7 +4,7 @@
     <view class="withdraw-content">
       <view class="available-card">
         <view><text>可用金额（元）</text><strong>{{money(account.availableAmount)}}</strong><small>总余额 {{money(totalBalance)}} 元 ›</small></view>
-        <image src="/static/jk-ui-v2/illustrations/finance-hero.png" mode="aspectFit"/>
+        <image src="https://file.wit.cn/jzk/static/jk-ui-v2/illustrations/finance-hero.png" mode="aspectFit"/>
       </view>
 
       <view class="card amount-card">

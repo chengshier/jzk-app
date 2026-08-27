@@ -10,6 +10,11 @@ export const saveMedicine = data => request.post('jk/health/medicine', { occurre
 export const getHealthDataList = data => request.get('jk/health/data/list', data);
 export const getHealthDataDetail = id => request.get('jk/health/data/' + id);
 export const getHealthDevices = () => request.get('jk/health/device/list');
+// 三诺设备状态由后端根据授权会话与首条 1003 数据聚合，页面不再猜测“准备中”。
+export const getHealthDeviceStatus = () => request.get('jk/health/sinocare/device/status');
+export const getGlucoseTrend = data => request.get('jk/health/glucose/trend', data);
+export const getSinocareHealthReportList = data => request.get('jk/health/sinocare/report/list', data);
+export const getSinocareHealthReportDetail = id => request.get('jk/health/sinocare/report/' + id);
 export const bindHealthDevice = data => request.post('jk/health/device/bind', Object.assign({}, data, { requestNo: data.requestNo || ('BIND-' + Date.now()) }));
 export const unbindHealthDevice = (id, reason = '') => request.post('jk/health/device/' + id + '/unbind?reason=' + encodeURIComponent(reason), {});
 export const getHealthAuthorizations = () => request.get('jk/health/authorization/list');

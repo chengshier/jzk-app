@@ -459,27 +459,27 @@
 				case 'theme1':
 					that.backBg = 'crmebimage/perset/bargain_header_bg/bargain_header_bg1.jpg';
 					that.backHead = 'crmebimage/perset/bargain_tip/bargain_tip1.png';
-					that.posterbackgd = require('../images/bargain_post1.png') // 因为跨域不能使用网络图片，
+					that.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post1.png' // 因为跨域不能使用网络图片，
 					break;
 				case 'theme2':
 					that.backBg = 'crmebimage/perset/bargain_header_bg/bargain_header_bg2.jpg';
 					that.backHead = 'crmebimage/perset/bargain_tip/bargain_tip2.png';
-					that.posterbackgd = require('../images/bargain_post2.png') 
+					that.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post2.png' 
 					break;
 				case 'theme3':
 					that.backBg = 'crmebimage/perset/bargain_header_bg/bargain_header_bg3.jpg';
 					that.backHead = 'crmebimage/perset/bargain_tip/bargain_tip3.png';
-					that.posterbackgd = require('../images/bargain_post3.png') 
+					that.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post3.png' 
 					break;
 				case 'theme4':
 					that.backBg = 'crmebimage/perset/bargain_header_bg/bargain_header_bg4.jpg';
 					that.backHead = 'crmebimage/perset/bargain_tip/bargain_tip4.png';
-					that.posterbackgd = require('../images/bargain_post4.png') 
+					that.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post4.png' 
 					break;
 				case 'theme5':
 					that.backBg = 'crmebimage/perset/bargain_header_bg/bargain_header_bg5.jpg';
 					that.backHead = 'crmebimage/perset/bargain_tip/bargain_tip5.png';
-					that.posterbackgd = require('../images/bargain_post5.png') 
+					that.posterbackgd = 'https://file.wit.cn/jzk/static/activity/images/bargain_post5.png' 
 					break;
 			}
 			that.$store.commit("PRODUCT_TYPE", 'normal');
@@ -1489,19 +1489,19 @@
 		}
 
 		.num1 {
-			background-image: url('../images/n1.png');
+			background-image: url('https://file.wit.cn/jzk/static/activity/images/n1.png');
 			background-repeat: no-repeat;
 			background-size: 100% 100%;
 		}
 
 		.num2 {
-			background-image: url('../images/n2.png');
+			background-image: url('https://file.wit.cn/jzk/static/activity/images/n2.png');
 			background-repeat: no-repeat;
 			background-size: 100% 100%;
 		}
 
 		.num3 {
-			background-image: url('../images/n3.png');
+			background-image: url('https://file.wit.cn/jzk/static/activity/images/n3.png');
 			background-repeat: no-repeat;
 			background-size: 100% 100%;
 		}

@@ -3,13 +3,13 @@
     <jk-page-nav title="身份状态" />
     <view class="page-content">
       <view class="identity-hero">
-        <view class="identity-avatar"><image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
+        <view class="identity-avatar"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
         <view class="identity-main">
           <view class="identity-title"><text>{{ roleName }}</text><jk-status-tag :text="identityStatusText" :tone="statusTone"/></view>
           <text class="identity-region">{{ context.regionName || context.regionCode || '暂未绑定区域' }}</text>
           <text class="identity-valid">有效期：{{ context.expireTime ? formatDate(context.expireTime) : '长期有效' }}</text>
         </view>
-        <image class="hero-watermark" src="/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
+        <image class="hero-watermark" src="https://file.wit.cn/jzk/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
       </view>
 
       <view class="card">
@@ -37,7 +37,7 @@
           </view>
         </view>
       </view>
-      <view class="service-tip"><image src="/static/jk-ui-v2/icons/info.png" mode="aspectFit"/><text>如身份信息有误，请联系平台客服</text></view>
+      <view class="service-tip"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/info.png" mode="aspectFit"/><text>如身份信息有误，请联系平台客服</text></view>
     </view>
     <view class="status-tabbar">
       <view @tap="switchHome"><jk-icon name="home" size="sm"/><text>首页</text></view>

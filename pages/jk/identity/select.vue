@@ -12,7 +12,7 @@
 
       <view v-for="role in displayRoles" :key="role.code" :class="['role-card',{selected:selectedRoleCode===role.code,current:role.current,disabled:role.disabled}]" @tap="chooseRole(role)">
         <view :class="['role-avatar','role-avatar--'+role.code]">
-          <image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit" />
+          <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png" mode="aspectFit" />
         </view>
         <view class="role-main">
           <view class="role-title-row">
@@ -29,7 +29,7 @@
         </view>
       </view>
 
-      <view class="hint-row"><image src="/static/jk-ui-v2/icons/info.png" mode="aspectFit"/><text>不同身份拥有不同的功能权限与权益，请根据实际角色选择。</text></view>
+      <view class="hint-row"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/info.png" mode="aspectFit"/><text>不同身份拥有不同的功能权限与权益，请根据实际角色选择。</text></view>
     </view>
     <jk-bottom-action><button class="primary-btn" :disabled="!selectedRoleCode" @tap="continueApply">下一步</button></jk-bottom-action>
   </view>

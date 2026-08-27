@@ -7,6 +7,9 @@ export function prepareSinocareAuthorization(data) {
 export function getJkPermissionContext() {
   return request.get('jk/permission/context');
 }
+export function activateJkEntryAccess(scene) {
+  return request.post('jk/entry-access/activate?scene=' + encodeURIComponent(scene), {});
+}
 
 export function getJkBusinessSummary() {
   return request.get('jk/business/summary');
@@ -92,6 +95,9 @@ export function getJkWithdrawDetail(id) { return request.get('jk/withdraw/detail
 export function getJkTeamSummary() { return request.get('jk/team/summary'); }
 export function getJkTeamMemberDetail(userId) { return request.get('jk/team/member/' + userId); }
 export function getJkPromotionQrcode() { return request.get('jk/team/qrcode'); }
+export function generateJkPromotionCode(sceneCode, requestNo) {
+  return request.get('jk/promotion-code/generate', { sceneCode, requestNo });
+}
 export function getJkPromotionMaterials(data) { return request.get('jk/promotion/material/list', data); }
 export function getJkEligibleParentOptions(data) { return request.get('jk/team/relation-change/parent-options', data); }
 export function applyJkRelationChange(data) { return request.post('jk/team/relation-change/apply', data); }

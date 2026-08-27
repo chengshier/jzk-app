@@ -2,7 +2,7 @@
   <view :class="['result-page',{rejected}]">
     <jk-page-nav :title="rejected ? '审核拒绝' : '审核通过'" transparent />
     <view v-if="application.id" class="result-content">
-      <view class="result-visual"><image :src="rejected ? '/static/jk-ui-v2/icons/error.png' : '/static/jk-ui-v2/icons/success.png'" mode="aspectFit"/></view>
+      <view class="result-visual"><image :src="rejected ? 'https://file.wit.cn/jzk/static/jk-ui-v2/icons/error.png' : 'https://file.wit.cn/jzk/static/jk-ui-v2/icons/success.png'" mode="aspectFit"/></view>
       <text class="result-title">{{ rejected ? '审核未通过' : '审核通过' }}</text>
       <text class="result-desc">{{ rejected ? '很遗憾，您的业务身份申请未通过，请根据原因修改后重新提交申请。' : '感谢您的耐心等待，您的业务身份已生效，可正常使用相关服务。' }}</text>
 

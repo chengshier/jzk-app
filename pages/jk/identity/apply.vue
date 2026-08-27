@@ -43,7 +43,7 @@
           <text class="remove-file" @tap.stop="removeCertificate(index)">×</text>
         </view>
         <view v-if="certificateUrls.length < 3" class="upload-action" @tap="addCertificate">
-          <image src="/static/jk-ui-v2/icons/document.png" mode="aspectFit" />
+          <image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/document.png" mode="aspectFit" />
           <text>{{ uploading ? '上传中...' : '点击上传身份证正反面' }}</text>
           <text class="upload-tip">支持 jpg/png，单张不超过10MB</text>
         </view>
@@ -71,7 +71,8 @@ export default {
       // Keep this id for the page lifecycle so a retry is deduplicated by the server.
       requestNo: `jk_apply_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
       certificateUrls: [],
-      form: { realName: '', mobile: '', regionCode: '', regionName: '', recommender: '', applyReason: '' }
+      form: { realName: '', mobile: '', regionCode: '', regionName: '', recommender: '', applyReason: '' },
+      promotionInviterUserId: null
     };
   },
   computed: {
@@ -82,6 +83,9 @@ export default {
   },
   onLoad(query) {
     this.requestedRoleCode = query.roleCode || '';
+    // 推广码仅暂存邀请上下文；提交申请时落 parentUserId，审核通过前绝不建立关系。
+    const promotion = uni.getStorageSync('jk_promotion_context') || {};
+    this.promotionInviterUserId = promotion.type === 'IDENTITY_PROMOTION' ? promotion.inviterUserId : null;
     this.loadContext();
     this.loadRegions();
   },
@@ -174,7 +178,8 @@ export default {
         realName: this.form.realName,
         mobile: this.form.mobile,
         regionCode: this.form.regionCode,
-        // The backend has no recommender lookup endpoint, so preserve the typed value for auditors without fabricating parentUserId.
+        parentUserId: this.promotionInviterUserId,
+        // 手填推荐人仅供审核员参考，不能伪造上下级 ID。
         applyReason: this.buildApplyReason(),
         certificateFiles: JSON.stringify(this.certificateUrls)
       }).then(res => {

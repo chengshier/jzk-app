@@ -19,31 +19,17 @@
 			"path": "pages/order_addcart/order_addcart",
 			"style": {
 				"navigationBarTitleText": "购物车",
-				"navigationStyle": "custom",
-				"app-plus": {
-					// #ifdef APP-PLUS
-					"titleNView": {
-						"type": "default"
-					}
-					// #endif
-				}
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/user/index",
 			"style": {
-				"navigationBarTitleText": "个人中心", "navigationStyle": "custom",
 				// #ifdef MP || APP-PLUS
 				"navigationBarTextStyle": "black",
 				"navigationBarBackgroundColor": "#fff",
 				// #endif
-				"app-plus": {
-					// #ifdef APP-PLUS
-					"titleNView": {
-						"type": "default"
-					}
-					// #endif
-				}
+				"navigationBarTitleText": "个人中心", "navigationStyle": "custom"
 			}
 		},
 		{
@@ -126,10 +112,13 @@
                 {"path": "health/dataList","style":{"navigationBarTitleText": "健康记录"}},
                 {"path": "health/device","style":{"navigationBarTitleText": "健康设备"}},
                 {"path": "health/authorization","style":{"navigationBarTitleText": "健康授权"}},
+                {"path": "health/authorizationSuccess","style":{"navigationBarTitleText": "授权结果"}},
                 {"path": "health/authorizedOwners","style":{"navigationBarTitleText": "已授权用户"}},
                 {"path": "health/authorizedData","style":{"navigationBarTitleText": "授权健康数据"}},
                 {"path": "health/profile","style":{"navigationBarTitleText": "健康档案"}},
                 {"path": "health/trend","style":{"navigationBarTitleText": "血糖趋势"}},
+                {"path": "health/reportDetail","style":{"navigationBarTitleText": "健康报告详情"}},
+                {"path": "health/reportList","style":{"navigationBarTitleText": "健康报告"}},
                 {"path": "health/alerts","style":{"navigationBarTitleText": "异常提醒"}},
                 {"path":"identity/entry","style":{"navigationBarTitleText":"身份申请入口","navigationStyle":"custom"}},
                 {"path":"identity/detail","style":{"navigationBarTitleText":"身份详情","navigationStyle":"custom"}},

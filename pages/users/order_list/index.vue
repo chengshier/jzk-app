@@ -8,7 +8,7 @@
 						<view>消费订单：{{orderData.orderCount || 0}} 总消费：￥{{Number(orderData.sumPrice).toFixed(2) || 0}}</view>
 					</view>
 					<view class='pictrue'>
-						<image src='../../../static/images/orderTime.png'></image>
+						<image src='https://file.wit.cn/jzk/static/images/orderTime.png'></image>
 					</view>
 				</view>
 			</view>

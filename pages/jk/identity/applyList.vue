@@ -6,7 +6,7 @@
     </view>
     <view class="records-list">
       <view v-for="item in filteredList" :key="item.id" class="record-row" @tap="openDetail(item)">
-        <view :class="['record-icon',item.statusClass]"><image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
+        <view :class="['record-icon',item.statusClass]"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
         <view class="record-main">
           <view class="record-head"><text class="role-name">{{ item.roleDisplayName }}</text><jk-status-tag :text="item.statusDisplayText" :tone="item.statusTone"/></view>
           <text class="record-meta">申请时间：{{ formatTime(item.createTime) }}</text>

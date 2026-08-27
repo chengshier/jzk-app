@@ -10,6 +10,24 @@ function recordJkPromotionEntry(options) {
   recordJkPromotionOpen({ sceneCode, requestNo: 'PROMOTION-OPEN-' + Date.now(), entryPage: options && options.path ? options.path : '', channel: 'MINI_PROGRAM' }).catch(() => {});
 }
 
+function captureJkBusinessScene(options) {
+  const query = (options && options.query) || {};
+  let scene = query.scene || query.sceneCode;
+  if (!scene) return false;
+  try { scene = decodeURIComponent(scene); } catch (e) {}
+  if (scene === 'entry:open') {
+    uni.setStorageSync('jk_promotion_context', { type: 'ENTRY_ACCESS', scene });
+    return true;
+  }
+  const match = /^bind:(\d+)$/.exec(String(scene));
+  if (match) {
+    // 不写 globalData.spread：九州康推广关系必须等身份审核通过后才创建。
+    uni.setStorageSync('jk_promotion_context', { type: 'IDENTITY_PROMOTION', inviterUserId: Number(match[1]), scene });
+    return true;
+  }
+  return false;
+}
+
 	import {
 		checkLogin
 	} from "./libs/login";
@@ -51,10 +69,11 @@ function recordJkPromotionEntry(options) {
 			routinePhoneVerification: '', //小程序手机号校验类型（多选）1微信小程序验证 2短信验证
 			companyName: uni.getStorageSync('companyName') ? uni.getStorageSync('companyName') : '欢迎你', //公司名称
 			tokenIsExist: false, //登录是否失效 false 失效，true没失效
-			mobileLoginLogo: uni.getStorageSync('mobileLoginLogo') || `${Cache.get("imgHost")}crmebimage/perset/staticImg/logo2.png` //登录页logo
+			mobileLoginLogo: uni.getStorageSync('mobileLoginLogo') || '' //登录页logo（已隐藏默认crmeb logo）
 		},
 		onLaunch: function(option) {
 			recordJkPromotionEntry(option);
+			const isJkBusinessScene = captureJkBusinessScene(option);
 			//获取登录配置
 			this.getLoginConfig();
 
@@ -119,7 +138,7 @@ function recordJkPromotionEntry(options) {
 				return false;
 			}
 			//小程序扫码进入场景
-			if (option.query.hasOwnProperty('scene')) {
+			if (!isJkBusinessScene && option.query.hasOwnProperty('scene')) {
 				switch (option.scene) {
 					case 1047: //扫描小程序码
 					case 1048: //长按图片识别小程序码

@@ -3,14 +3,14 @@
     <jk-page-nav title="九州康业务中心" />
     <view class="page-content">
       <view class="identity-banner">
-        <view class="banner-avatar"><image src="/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
+        <view class="banner-avatar"><image src="https://file.wit.cn/jzk/static/jk-ui-v2/icons/user.png" mode="aspectFit"/></view>
         <view class="banner-main">
           <view class="banner-title"><text>{{ roleName }}</text><jk-status-tag :text="identityDisabled?'身份停用':(context.freezeStatus?'身份冻结':'身份正常')" :tone="identityDisabled||context.freezeStatus?'danger':'success'"/></view>
           <text class="banner-region">{{ context.regionName || context.regionCode || '暂未绑定区域' }}</text>
           <text class="banner-valid">有效期：{{ context.expireTime ? String(context.expireTime).slice(0,10) : '长期有效' }}</text>
         </view>
         <button class="detail-btn" @tap="goStatus">身份详情 ›</button>
-        <image class="banner-watermark" src="/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
+        <image class="banner-watermark" src="https://file.wit.cn/jzk/static/jk-ui-v2/illustrations/identity-hero.png" mode="aspectFit"/>
       </view>
 
       <view v-if="identityDisabled" class="disabled-tip">当前身份属于后续扩展角色，本版本不参与价格、库存、佣金和业务权限计算。</view>

@@ -119,7 +119,7 @@ export default {
       item.damagedQty = damaged;
     },
     shortage(item) { return Math.max(0, Number(item.expectedQty || 0) - Number(item.receivedQty || 0)); },
-    fallback(index) { return ['/static/jk-ui-v2/products/meter.png', '/static/jk-ui-v2/products/glucose-paper.png'][index % 2]; },
+    fallback(index) { return ['https://file.wit.cn/jzk/static/jk-ui-v2/products/meter.png', 'https://file.wit.cn/jzk/static/jk-ui-v2/products/glucose-paper.png'][index % 2]; },
     confirmNormal() {
       uni.showModal({
         title: '确认正常收货',

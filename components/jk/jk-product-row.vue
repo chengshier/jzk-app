@@ -11,7 +11,7 @@
 </template>
 <script>
 export default {
-  props:{item:{type:Object,default:()=>({})},fallback:{type:String,default:'/static/jk-ui-v2/products/glucose-paper.png'}},
+  props:{item:{type:Object,default:()=>({})},fallback:{type:String,default:'https://file.wit.cn/jzk/static/jk-ui-v2/products/glucose-paper.png'}},
   computed:{imageSrc(){return this.item.productImage||this.item.image||this.item.pic||this.fallback;},specText(){return this.item.skuText||this.item.skuName||this.item.spec||this.item.unitName||'默认规格';}}
 };
 </script>

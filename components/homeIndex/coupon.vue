@@ -38,7 +38,7 @@
 								<view class="sill" :style="[...btnColorStyle]" @click="getCoupon(item.isUse,item.id)">
 									{{item.isUse?'已领取':'去领取'}}
 								</view>
-								<image src="../../static/images/newVip02.png" />
+								<image src="https://file.wit.cn/jzk/static/images/newVip02.png" />
 							</view>
 						</view>
 					</scroll-view>
@@ -229,7 +229,7 @@
 	.couponBg.style1{
 		width: 254rpx;
 		height: 144rpx;
-		background: url('../../static/images/couponBg.png');
+		background: url('https://file.wit.cn/jzk/static/images/couponBg.png');
 		background-repeat: no-repeat;
 	}
 	.couponBg {
@@ -277,7 +277,7 @@
 	.couponBg-new.couponBg {
 	  width: 137px;
 	  height: 75px;
-	  background: url('../../static/images/couponBg2.png') !important;
+	  background: url('https://file.wit.cn/jzk/static/images/couponBg2.png') !important;
 	  .right {
 	    width: 13%;
 	    color: #e93323;
