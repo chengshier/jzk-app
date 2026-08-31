@@ -3,11 +3,11 @@ name: Jiuzhoukang app static CI
 on:
   push:
     branches:
-      - feat/jzk-v3.1-phase3-operations
+      - master
+      - fix/jzk-v3.1-post-merge-hardening
   pull_request:
     branches:
       - master
-      - feat/jzk-v3.1-phase2-business
   workflow_dispatch:
 
 concurrency:
@@ -55,7 +55,6 @@ jobs:
               match = re.search(r'<script[^>]*>(.*?)</script>', text, re.S)
               if not match:
                   continue
-              # 删除完整静态 import（包括多行命名导入），不能只删第一行留下 `} from`。
               script = static_import.sub('', match.group(1))
               script = re.sub(r'export\s+default', 'const __component =', script, count=1)
               temp = pathlib.Path(tempfile.gettempdir()) / ('jk-vue-check-%s.mjs' % index)

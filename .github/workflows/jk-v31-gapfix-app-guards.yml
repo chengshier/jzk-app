@@ -2,7 +2,7 @@ name: JZK V3.1 app guards
 
 on:
   push:
-    branches: [feat/jzk-v3.1-phase3-operations]
+    branches: [master, fix/jzk-v3.1-post-merge-hardening]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -39,11 +39,12 @@ jobs:
           import pathlib,re,subprocess,tempfile
           targets=['App.vue','pages/infos/user_info/index.vue','pages/users/user_address/index.vue','components/jk-region-picker/index.vue']
           failures=[]
+          static_import=re.compile(r'^\s*import\s+(?:[\s\S]*?\s+from\s+)?[\'\"][^\'\"]+[\'\"]\s*;?\s*',flags=re.M)
           for i,name in enumerate(targets):
             text=pathlib.Path(name).read_text(encoding='utf-8')
             m=re.search(r'<script[^>]*>(.*?)</script>',text,re.S)
             if not m: continue
-            script=re.sub(r'^\s*import\s+.*?;?\s*$','',m.group(1),flags=re.M)
+            script=static_import.sub('',m.group(1))
             script=re.sub(r'export\s+default','const __component =',script,count=1)
             temp=pathlib.Path(tempfile.gettempdir())/('jk-v31-app-%s.mjs'%i)
             temp.write_text(script,encoding='utf-8')
